@@ -187,4 +187,16 @@
     <string name="add_instance_activity">Add Instance Activity</string>
     <string name="edit_instance_activity">Edit Instance Activity</string>
     <string name="class_instance_activity">Class Instance Activity</string>
+    
+    <!-- Additional Class Instance Strings -->
+    <string name="no_instances_found">No class instances found</string>
+    <string name="tap_add_first_instance">Tap the + button to add your first class instance</string>
+    <string name="add_instance">Add Instance</string>
+    <string name="save_instance">Save Instance</string>
+    <string name="update_instance">Update Instance</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_location_captured">No location captured</string>
+    <string name="capture_location">Capture Location</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>
