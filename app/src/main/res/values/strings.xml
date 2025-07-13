@@ -1,14 +1,106 @@
 <resources>
-    <string name="app_name">UniversalYogaNative</string>
+    <string name="app_name">Universal Yoga</string>
+    
+    <!-- Navigation -->
+    <string name="menu_courses">Courses</string>
+    <string name="menu_instances">Class Instances</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_sync">Cloud Sync</string>
+    <string name="menu_settings">Settings</string>
+    
+    <!-- Course Form -->
+    <string name="course_form_title">Create Yoga Course</string>
+    <string name="edit_course_title">Edit Yoga Course</string>
+    <string name="day_of_week">Day of Week</string>
+    <string name="time">Time</string>
+    <string name="capacity">Capacity</string>
+    <string name="duration">Duration (minutes)</string>
+    <string name="price">Price (£)</string>
+    <string name="type">Type of Class</string>
+    <string name="description">Description</string>
+    <string name="difficulty">Difficulty Level</string>
+    <string name="location">Location</string>
+    <string name="instructor">Instructor</string>
+    
+    <!-- Buttons -->
+    <string name="btn_save">Save</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_back">Back</string>
+    <string name="btn_add_instance">Add Instance</string>
+    <string name="btn_view_instances">View Instances</string>
+    <string name="btn_search">Search</string>
+    <string name="btn_sync">Sync to Cloud</string>
+    <string name="btn_reset_db">Reset Database</string>
+    <string name="btn_take_photo">Take Photo</string>
+    <string name="btn_get_location">Get Location</string>
+    
+    <!-- Instance Form -->
+    <string name="instance_form_title">Add Class Instance</string>
+    <string name="edit_instance_title">Edit Class Instance</string>
+    <string name="date">Date</string>
+    <string name="teacher">Teacher</string>
+    <string name="comments">Comments</string>
+    <string name="photo">Photo</string>
+    <string name="location_coords">Location Coordinates</string>
+    
+    <!-- Search -->
+    <string name="search_title">Search Classes</string>
+    <string name="search_by_teacher">Search by Teacher</string>
+    <string name="search_by_date">Search by Date</string>
+    <string name="search_by_day">Search by Day</string>
+    <string name="search_hint">Enter search term...</string>
+    <string name="no_results">No results found</string>
+    
+    <!-- Sync -->
+    <string name="sync_title">Cloud Synchronization</string>
+    <string name="sync_success">Successfully synced to cloud</string>
+    <string name="sync_failed">Sync failed. Please try again.</string>
+    <string name="no_network">No network connection available</string>
+    <string name="sync_in_progress">Syncing...</string>
+    
+    <!-- Validation Messages -->
+    <string name="error_required_field">This field is required</string>
+    <string name="error_invalid_capacity">Please enter a valid capacity (1-100)</string>
+    <string name="error_invalid_duration">Please enter a valid duration (15-180 minutes)</string>
+    <string name="error_invalid_price">Please enter a valid price</string>
+    <string name="error_invalid_date">Please enter a valid date</string>
+    <string name="error_date_mismatch">Date must match the selected day of week</string>
+    
+    <!-- Success Messages -->
+    <string name="course_saved">Yoga course saved successfully</string>
+    <string name="course_updated">Yoga course updated successfully</string>
+    <string name="course_deleted">Yoga course deleted successfully</string>
+    <string name="instance_saved">Class instance saved successfully</string>
+    <string name="instance_updated">Class instance updated successfully</string>
+    <string name="instance_deleted">Class instance deleted successfully</string>
+    
+    <!-- Confirmation Messages -->
+    <string name="confirm_delete_course">Are you sure you want to delete this course and all its instances?</string>
+    <string name="confirm_delete_instance">Are you sure you want to delete this class instance?</string>
+    <string name="confirm_reset_database">Are you sure you want to reset the database? All data will be lost.</string>
+    
+    <!-- Course Details -->
+    <string name="course_details_title">Course Details</string>
+    <string name="instance_count">Class Instances: %d</string>
+    <string name="course_schedule">Schedule</string>
+    <string name="course_info">Course Information</string>
+    <string name="no_instances">No class instances scheduled</string>
+    
+    <!-- Day of Week Array -->
     <string-array name="day_of_week">
-        <item>Mon</item>
-        <item>Tue</item>
-        <item>Wed</item>
-        <item>Thu</item>
-        <item>Fri</item>
-        <item>Sat</item>
-        <item>Sun</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
     </string-array>
+    
+    <!-- Time Array -->
     <string-array name="time_of_day">
         <item>5:00 AM</item>
         <item>6:00 AM</item>
@@ -26,9 +118,73 @@
         <item>6:00 PM</item>
         <item>7:00 PM</item>
         <item>8:00 PM</item>
+        <item>9:00 PM</item>
+        <item>10:00 PM</item>
     </string-array>
+    
+    <!-- Yoga Type Array -->
     <string-array name="yoga_type">
-        <item>Family Yoga</item>
         <item>Flow Yoga</item>
+        <item>Aerial Yoga</item>
+        <item>Family Yoga</item>
+        <item>Hatha Yoga</item>
+        <item>Vinyasa Yoga</item>
+        <item>Power Yoga</item>
+        <item>Restorative Yoga</item>
+        <item>Yin Yoga</item>
+        <item>Hot Yoga</item>
+        <item>Prenatal Yoga</item>
     </string-array>
+    
+    <!-- Difficulty Array -->
+    <string-array name="difficulty_level">
+        <item>Beginner</item>
+        <item>Intermediate</item>
+        <item>Advanced</item>
+        <item>All Levels</item>
+    </string-array>
+    
+    <!-- Duration Array -->
+    <string-array name="duration_options">
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>75</item>
+        <item>90</item>
+        <item>120</item>
+    </string-array>
+    
+    <!-- Capacity Array -->
+    <string-array name="capacity_options">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>35</item>
+        <item>40</item>
+        <item>50</item>
+    </string-array>
+    
+    <!-- Class Instance Strings -->
+    <string name="course_details">Course Details</string>
+    <string name="class_instances">Class Instances</string>
+    <string name="no_class_instances">No class instances yet</string>
+    <string name="tap_plus_to_add_instance">Tap + to add your first instance</string>
+    <string name="add_class_instance">Add Class Instance</string>
+    <string name="edit_class_instance">Edit Class Instance</string>
+    <string name="class_photo">Class Photo</string>
+    <string name="sync_status">Sync Status</string>
+    <string name="teacher_name">Teacher Name</string>
+    <string name="class_comments">Class Comments</string>
+    <string name="instance_date">Instance Date</string>
+    <string name="optional_comments">Optional Comments</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="select_photo">Select Photo</string>
+    <string name="search_activity">Search Activity</string>
+    <string name="sync_activity">Sync Activity</string>
+    <string name="add_instance_activity">Add Instance Activity</string>
+    <string name="edit_instance_activity">Edit Instance Activity</string>
+    <string name="class_instance_activity">Class Instance Activity</string>
 </resources>

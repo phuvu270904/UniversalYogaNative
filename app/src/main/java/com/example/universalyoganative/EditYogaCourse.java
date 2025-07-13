@@ -1,9 +1,10 @@
 package com.example.universalyoganative;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -24,10 +25,9 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.util.Calendar;
 import java.util.Locale;
 
-public class CreateYogaCourse extends AppCompatActivity {
+public class EditYogaCourse extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     
     // UI Components
@@ -42,18 +42,28 @@ public class CreateYogaCourse extends AppCompatActivity {
     private double currentLatitude = 0.0;
     private double currentLongitude = 0.0;
     
-    // Form validation
-    private boolean isFormValid = false;
+    // Course data
+    private long courseId;
+    private YogaCourse originalCourse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_yoga_course);
         
+        // Get course ID from intent
+        courseId = getIntent().getLongExtra("course_id", -1);
+        if (courseId == -1) {
+            Toast.makeText(this, "Error: Invalid course ID", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        
         setupToolbar();
         initializeViews();
         setupDropdowns();
         setupClickListeners();
+        loadCourseData();
         
         // Initialize location services
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -65,6 +75,7 @@ public class CreateYogaCourse extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(R.string.edit_course_title);
         }
         
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -144,6 +155,45 @@ public class CreateYogaCourse extends AppCompatActivity {
         btnGetLocation.setOnClickListener(v -> getCurrentLocation());
     }
 
+    @SuppressLint("Range")
+    private void loadCourseData() {
+        Cursor cursor = MainActivity.helper.readYogaCourse(courseId);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            originalCourse = new YogaCourse();
+            originalCourse.setId(cursor.getLong(cursor.getColumnIndex("_id")));
+            originalCourse.setType(cursor.getString(cursor.getColumnIndex("type")));
+            originalCourse.setDifficulty(cursor.getString(cursor.getColumnIndex("difficulty")));
+            originalCourse.setDayOfWeek(cursor.getString(cursor.getColumnIndex("dayofweek")));
+            originalCourse.setTime(cursor.getString(cursor.getColumnIndex("time")));
+            originalCourse.setDuration(cursor.getInt(cursor.getColumnIndex("duration")));
+            originalCourse.setCapacity(cursor.getInt(cursor.getColumnIndex("capacity")));
+            originalCourse.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
+            originalCourse.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
+            originalCourse.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+            originalCourse.setLocation(cursor.getString(cursor.getColumnIndex("location")));
+            
+            populateFields();
+            cursor.close();
+        } else {
+            Toast.makeText(this, "Course not found", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void populateFields() {
+        spType.setText(originalCourse.getType(), false);
+        spDifficulty.setText(originalCourse.getDifficulty() != null ? originalCourse.getDifficulty() : "", false);
+        spDayOfWeek.setText(originalCourse.getDayOfWeek(), false);
+        spTime.setText(originalCourse.getTime(), false);
+        spDuration.setText(String.valueOf(originalCourse.getDuration()), false);
+        spCapacity.setText(String.valueOf(originalCourse.getCapacity()), false);
+        etPrice.setText(String.valueOf(originalCourse.getPrice()));
+        etInstructor.setText(originalCourse.getInstructor() != null ? originalCourse.getInstructor() : "");
+        etDescription.setText(originalCourse.getDescription() != null ? originalCourse.getDescription() : "");
+        etLocation.setText(originalCourse.getLocation() != null ? originalCourse.getLocation() : "");
+    }
+
     private boolean validateForm() {
         boolean isValid = true;
         
@@ -221,13 +271,15 @@ public class CreateYogaCourse extends AppCompatActivity {
         
         Intent intent = new Intent(this, ConfirmCourseActivity.class);
         intent.putExtra("course", course);
-        intent.putExtra("isEditing", false);
+        intent.putExtra("isEditing", true);
+        intent.putExtra("course_id", courseId);
         startActivity(intent);
         finish();
     }
 
     private YogaCourse createCourseFromForm() {
         YogaCourse course = new YogaCourse();
+        course.setId(courseId);
         
         course.setType(spType.getText().toString());
         course.setDifficulty(spDifficulty.getText().toString());
@@ -295,4 +347,4 @@ public class CreateYogaCourse extends AppCompatActivity {
             }
         }
     }
-}
+} 
