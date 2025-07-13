@@ -7,5 +7,10 @@
         <!-- Disable default action bar to use custom toolbar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        
+        <!-- Configure status bar -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

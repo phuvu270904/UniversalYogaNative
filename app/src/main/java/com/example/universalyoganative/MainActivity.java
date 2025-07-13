@@ -36,26 +36,27 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize database
         helper = new DatabaseHelper(getApplicationContext());
 
-        // Setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Initialize views
         initializeViews();
         
-        // Setup RecyclerView
         setupRecyclerView();
         
-        // Setup click listeners
         setupClickListeners();
         
-        // Setup window insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            
+            int statusBarHeight = 0;
+            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0) {
+                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+            }
+            
+            v.setPadding(systemBars.left, statusBarHeight, systemBars.right, systemBars.bottom);
             return insets;
         });
     }
@@ -75,28 +76,24 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
     }
 
     private void setupClickListeners() {
-        // Floating Action Button
         FloatingActionButton fabAddCourse = findViewById(R.id.fabAddCourse);
         fabAddCourse.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CreateYogaCourse.class);
             startActivity(intent);
         });
 
-        // Search Button
         MaterialButton btnSearch = findViewById(R.id.btnSearch);
         btnSearch.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SearchActivity.class);
             startActivity(intent);
         });
 
-        // Sync Button
         MaterialButton btnSync = findViewById(R.id.btnSync);
         btnSync.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SyncActivity.class);
             startActivity(intent);
         });
 
-        // Reset Database Button
         MaterialButton btnResetDb = findViewById(R.id.btnResetDb);
         btnResetDb.setOnClickListener(v -> showResetDatabaseDialog());
     }
@@ -142,13 +139,11 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
     }
 
     private void updateStatistics() {
-        // Update course count
         Cursor courseCursor = helper.readAllYogaCourse();
         int courseCount = courseCursor != null ? courseCursor.getCount() : 0;
         if (courseCursor != null) courseCursor.close();
         tvCourseCount.setText(String.valueOf(courseCount));
 
-        // Update instance count
         Cursor instanceCursor = helper.readAllClassInstances();
         int instanceCount = instanceCursor != null ? instanceCursor.getCount() : 0;
         if (instanceCursor != null) instanceCursor.close();
@@ -179,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
                 .show();
     }
 
-    // YogaCourseAdapter.OnCourseActionListener implementation
     @Override
     public void onEditCourse(YogaCourse course) {
         Intent intent = new Intent(this, EditYogaCourse.class);

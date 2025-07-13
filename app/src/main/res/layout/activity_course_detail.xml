@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".CourseDetailActivity">
@@ -15,10 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/md_theme_primary"
-            app:titleTextColor="@color/md_theme_onPrimary"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="@color/md_theme_onPrimary"
-            app:title="@string/course_details" />
+            app:title="@string/course_details"
+            app:titleTextColor="@color/md_theme_onPrimary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -40,8 +41,8 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/md_theme_outline">
+                app:strokeColor="@color/md_theme_outline"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -49,42 +50,129 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvCourseType"
+                    <!-- Action Buttons -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEdit"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:text="Edit" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDelete"
+                            style="@style/Widget.Material3.Button.TextButton.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Delete"
+                            android:textColor="@android:color/holo_red_dark" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/md_theme_onSurface"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/md_theme_onSurface"
-                        android:layout_marginBottom="8dp"
                         tools:text="Hatha Yoga" />
 
-                    <TextView
-                        android:id="@+id/tvCourseSchedule"
+                    <!-- Schedule Information -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="@color/md_theme_onSurface"
                         android:layout_marginBottom="8dp"
-                        tools:text="Monday, 9:00 AM - 60 mins" />
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvCourseDetails"
+                        <TextView
+                            android:id="@+id/tvDayOfWeek"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="Monday" />
+
+                        <TextView
+                            android:id="@+id/tvTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="9:00 AM" />
+
+                        <TextView
+                            android:id="@+id/tvDuration"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="60 minutes" />
+
+                        <TextView
+                            android:id="@+id/tvCapacity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="Capacity: 20" />
+
+                        <TextView
+                            android:id="@+id/tvPrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="$25.00" />
+                    </LinearLayout>
+
+                    <!-- Additional Information -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/md_theme_onSurfaceVariant"
-                        android:layout_marginBottom="8dp"
-                        tools:text="Capacity: 20 • Price: $25 • Difficulty: Beginner" />
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvDescription"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/md_theme_onSurfaceVariant"
-                        android:visibility="gone"
-                        tools:text="A gentle yoga practice focusing on basic postures and breathing techniques." />
+                        <TextView
+                            android:id="@+id/tvDifficulty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="Beginner" />
+
+                        <TextView
+                            android:id="@+id/tvInstructor"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="John Doe" />
+
+                        <TextView
+                            android:id="@+id/tvLocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="16sp"
+                            tools:text="Studio A" />
+
+                        <TextView
+                            android:id="@+id/tvDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/md_theme_onSurfaceVariant"
+                            android:textSize="14sp"
+                            tools:text="A gentle yoga practice focusing on basic postures and breathing techniques." />
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -94,28 +182,39 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginBottom="16dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/class_instances"
+                    android:text="Class Instances"
+                    android:textColor="@color/md_theme_onSurface"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/md_theme_onSurface" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvInstanceCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
                     android:textColor="@color/md_theme_onSurfaceVariant"
+                    android:textSize="14sp"
                     tools:text="5 instances" />
 
             </LinearLayout>
+
+            <!-- Empty State -->
+            <TextView
+                android:id="@+id/tvEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No class instances available"
+                android:textAlignment="center"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:textSize="16sp"
+                android:visibility="gone" />
 
             <!-- Instances RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
@@ -125,48 +224,20 @@
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/class_instance_item" />
 
-            <!-- Empty State -->
-            <LinearLayout
-                android:id="@+id/emptyStateContainer"
-                android:layout_width="match_parent"
+            <!-- Floating Action Button -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabAddInstance"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_class_instances"
-                    android:textSize="16sp"
-                    android:textColor="@color/md_theme_onSurfaceVariant"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/tap_plus_to_add_instance"
-                    android:textSize="14sp"
-                    android:textColor="@color/md_theme_onSurfaceVariant" />
-
-            </LinearLayout>
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:contentDescription="@string/add_class_instance"
+                android:src="@android:drawable/ic_input_add"
+                app:backgroundTint="@color/md_theme_primary"
+                app:tint="@color/md_theme_onPrimary" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Floating Action Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddInstance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add"
-        android:contentDescription="@string/add_class_instance"
-        app:backgroundTint="@color/md_theme_primary"
-        app:tint="@color/md_theme_onPrimary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 
