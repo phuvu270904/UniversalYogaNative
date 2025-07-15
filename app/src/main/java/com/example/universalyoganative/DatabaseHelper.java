@@ -249,8 +249,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Get all users
      */
     public Cursor readAllUsers() {
-        return database.query(TABLE_USER, null, null, null, null, null, 
-                             COLUMN_USER_CREATED_DATE + " DESC");
+        String selection = COLUMN_USER_ROLE + " = ?";
+        String[] selectionArgs = new String[]{"user"};
+        return database.query(TABLE_USER, null, selection, selectionArgs, null, null, 
+                            COLUMN_USER_CREATED_DATE + " DESC");
     }
 
     /**
