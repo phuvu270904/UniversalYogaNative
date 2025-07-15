@@ -18,7 +18,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
     private static final String TABLE_CLASS_INSTANCE = "ClassInstance";
-    private static final String TABLE_USER = "User";
+    public static final String TABLE_USER = "User";
 
     // YogaCourse table columns
     private static final String COLUMN_ID = "_id";
@@ -46,12 +46,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_LONGITUDE = "longitude";
 
     // User table columns
-    private static final String COLUMN_USER_ID = "_id";
-    private static final String COLUMN_USER_NAME = "name";
-    private static final String COLUMN_USER_EMAIL = "email";
-    private static final String COLUMN_USER_PASSWORD = "password";
-    private static final String COLUMN_USER_ROLE = "role";
-    private static final String COLUMN_USER_CREATED_DATE = "created_date";
+    public static final String COLUMN_USER_ID = "_id";
+    public static final String COLUMN_USER_NAME = "name";
+    public static final String COLUMN_USER_EMAIL = "email";
+    public static final String COLUMN_USER_PASSWORD = "password";
+    public static final String COLUMN_USER_ROLE = "role";
+    public static final String COLUMN_USER_CREATED_DATE = "created_date";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -280,9 +280,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Delete user
      */
-    public int deleteUser(long userId) {
-        return database.delete(TABLE_USER, COLUMN_USER_ID + "=?", 
-                              new String[]{String.valueOf(userId)});
+    public void deleteUser(long userId) {
+        database.delete(TABLE_USER, COLUMN_USER_ID + "=?", new String[]{String.valueOf(userId)});
     }
 
     /**
@@ -646,5 +645,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                       "FROM " + TABLE_YOGA_COURSE + " c " +
                       "ORDER BY c." + COLUMN_DAY_OF_WEEK + " ASC, c." + COLUMN_TIME + " ASC";
         return database.rawQuery(query, null);
+    }
+
+    public Cursor getAllUsers() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(
+            "users",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "name ASC"
+        );
+    }
+
+    public boolean updateUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", user.getName());
+        values.put("email", user.getEmail());
+        return db.update("users", values, "_id = ?", new String[]{String.valueOf(user.getId())}) > 0;
     }
 }

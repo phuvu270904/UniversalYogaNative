@@ -33,7 +33,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                     return true;
                 } else if (itemId == R.id.navigation_account) {
-                    Toast.makeText(this, "Account - Coming soon!", Toast.LENGTH_SHORT).show();
+                    if (!(this instanceof AccountActivity)) {
+                        startActivity(new Intent(this, AccountActivity.class));
+                        finish();
+                    }
                     return true;
                 } else if (itemId == R.id.navigation_profile) {
                     if (!(this instanceof ProfileActivity)) {
@@ -53,11 +56,12 @@ public abstract class BaseActivity extends AppCompatActivity {
                 navView.setSelectedItemId(R.id.navigation_home);
             } else if (this instanceof ProfileActivity) {
                 navView.setSelectedItemId(R.id.navigation_profile);
+            } else if (this instanceof AccountActivity) {
+                navView.setSelectedItemId(R.id.navigation_account);
             }
         }
     }
 
-    // Each activity must implement this to provide its layout
     @LayoutRes
     protected abstract int getLayoutResourceId();
 } 
