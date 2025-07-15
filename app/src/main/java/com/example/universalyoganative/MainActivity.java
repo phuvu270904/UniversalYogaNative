@@ -20,6 +20,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
     private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
     private List<YogaCourse> courseList;
     private SessionManager sessionManager;
+    private BottomNavigationView navView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +63,9 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         }
 
         initializeViews();
-        
         setupRecyclerView();
-        
         setupClickListeners();
+        setupBottomNavigation();
         
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
                 statusBarHeight = getResources().getDimensionPixelSize(resourceId);
             }
             
-            v.setPadding(systemBars.left, statusBarHeight, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, statusBarHeight, systemBars.right, 0);
             return insets;
         });
     }
@@ -85,6 +86,27 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         tvCourseCount = findViewById(R.id.tvCourseCount);
         tvInstanceCount = findViewById(R.id.tvInstanceCount);
         tvEmptyState = findViewById(R.id.tvEmptyState);
+        navView = findViewById(R.id.nav_view);
+    }
+
+    private void setupBottomNavigation() {
+        navView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                // Already on home, do nothing
+                return true;
+            } else if (itemId == R.id.navigation_schedule) {
+                Toast.makeText(this, "Schedule - Coming soon!", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (itemId == R.id.navigation_profile) {
+                Toast.makeText(this, "Profile - Coming soon!", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (itemId == R.id.navigation_settings) {
+                Toast.makeText(this, "Settings - Coming soon!", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupRecyclerView() {
