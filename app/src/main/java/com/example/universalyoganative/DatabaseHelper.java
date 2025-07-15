@@ -9,16 +9,18 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 3; // Incremented for User table
+    private static final int DATABASE_VERSION = 4; // Incremented for Bookings table
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
     private static final String TABLE_CLASS_INSTANCE = "ClassInstance";
     public static final String TABLE_USER = "User";
+    private static final String TABLE_BOOKINGS = "Bookings"; // Changed to match case convention
 
     // YogaCourse table columns
     private static final String COLUMN_ID = "_id";
@@ -34,6 +36,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_INSTRUCTOR = "instructor";
     private static final String COLUMN_CREATED_DATE = "created_date";
     private static final String COLUMN_SYNC_STATUS = "sync_status";
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_LEVEL = "level";
+    private static final String COLUMN_IMAGE_PATH = "image_path";
+    private static final String COLUMN_CREATED_BY = "created_by";
 
     // ClassInstance table columns
     private static final String COLUMN_INSTANCE_ID = "_id";
@@ -44,6 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_PHOTO_PATH = "photo_path";
     private static final String COLUMN_LATITUDE = "latitude";
     private static final String COLUMN_LONGITUDE = "longitude";
+    private static final String COLUMN_STATUS = "status";
 
     // User table columns
     public static final String COLUMN_USER_ID = "_id";
@@ -52,6 +59,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_USER_PASSWORD = "password";
     public static final String COLUMN_USER_ROLE = "role";
     public static final String COLUMN_USER_CREATED_DATE = "created_date";
+
+    // Booking related columns
+    private static final String COLUMN_BOOKING_ID = "_id";
+    private static final String COLUMN_BOOKING_CLASS_ID = "class_id";
+    private static final String COLUMN_BOOKING_USER_ID = "user_id";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -62,69 +74,70 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         try {
             // Create YogaCourse table
-            String CREATE_TABLE_YOGACOURSE = "CREATE TABLE " + TABLE_YOGA_COURSE + "(" +
-                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_DAY_OF_WEEK + " TEXT NOT NULL, " +
-                    COLUMN_TIME + " TEXT NOT NULL, " +
-                    COLUMN_CAPACITY + " INTEGER NOT NULL, " +
-                    COLUMN_DURATION + " INTEGER NOT NULL, " +
-                    COLUMN_PRICE + " REAL NOT NULL, " +
-                    COLUMN_TYPE + " TEXT NOT NULL, " +
-                    COLUMN_DESCRIPTION + " TEXT, " +
-                    COLUMN_DIFFICULTY + " TEXT, " +
-                    COLUMN_LOCATION + " TEXT, " +
-                    COLUMN_INSTRUCTOR + " TEXT, " +
-                    COLUMN_CREATED_DATE + " TEXT, " +
-                    COLUMN_SYNC_STATUS + " INTEGER DEFAULT 0" + // 0 = not synced, 1 = synced
-                    ")";
-            db.execSQL(CREATE_TABLE_YOGACOURSE);
-
-            // Create ClassInstance table
-            String CREATE_TABLE_CLASSINSTANCE = "CREATE TABLE " + TABLE_CLASS_INSTANCE + "(" +
-                    COLUMN_INSTANCE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_COURSE_ID + " INTEGER NOT NULL, " +
-                    COLUMN_DATE + " TEXT NOT NULL, " +
-                    COLUMN_TEACHER + " TEXT NOT NULL, " +
-                    COLUMN_COMMENTS + " TEXT, " +
-                    COLUMN_PHOTO_PATH + " TEXT, " +
-                    COLUMN_LATITUDE + " REAL, " +
-                    COLUMN_LONGITUDE + " REAL, " +
-                    COLUMN_SYNC_STATUS + " INTEGER DEFAULT 0, " +
-                    "FOREIGN KEY(" + COLUMN_COURSE_ID + ") REFERENCES " + TABLE_YOGA_COURSE + "(" + COLUMN_ID + ")" +
-                    ")";
-            db.execSQL(CREATE_TABLE_CLASSINSTANCE);
+            String CREATE_TABLE_YOGA_COURSE = "CREATE TABLE " + TABLE_YOGA_COURSE + "("
+                    + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_DAY_OF_WEEK + " TEXT,"
+                    + COLUMN_TIME + " TEXT,"
+                    + COLUMN_CAPACITY + " INTEGER,"
+                    + COLUMN_DURATION + " INTEGER,"
+                    + COLUMN_PRICE + " REAL,"
+                    + COLUMN_TYPE + " TEXT,"
+                    + COLUMN_DESCRIPTION + " TEXT,"
+                    + COLUMN_DIFFICULTY + " TEXT,"
+                    + COLUMN_LOCATION + " TEXT,"
+                    + COLUMN_INSTRUCTOR + " TEXT,"
+                    + COLUMN_CREATED_DATE + " TEXT,"
+                    + COLUMN_SYNC_STATUS + " INTEGER DEFAULT 0"
+                    + ")";
+            db.execSQL(CREATE_TABLE_YOGA_COURSE);
 
             // Create User table
-            String CREATE_TABLE_USER = "CREATE TABLE " + TABLE_USER + "(" +
-                    COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_USER_NAME + " TEXT NOT NULL, " +
-                    COLUMN_USER_EMAIL + " TEXT NOT NULL UNIQUE, " +
-                    COLUMN_USER_PASSWORD + " TEXT NOT NULL, " +
-                    COLUMN_USER_ROLE + " TEXT NOT NULL DEFAULT 'admin', " +
-                    COLUMN_USER_CREATED_DATE + " TEXT NOT NULL" +
-                    ")";
+            String CREATE_TABLE_USER = "CREATE TABLE " + TABLE_USER + "("
+                    + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_USER_NAME + " TEXT,"
+                    + COLUMN_USER_EMAIL + " TEXT UNIQUE,"
+                    + COLUMN_USER_PASSWORD + " TEXT,"
+                    + COLUMN_USER_ROLE + " TEXT,"
+                    + COLUMN_USER_CREATED_DATE + " TEXT"
+                    + ")";
             db.execSQL(CREATE_TABLE_USER);
 
+            // Create ClassInstance table
+            String CREATE_TABLE_CLASS_INSTANCE = "CREATE TABLE " + TABLE_CLASS_INSTANCE + "("
+                    + COLUMN_INSTANCE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_COURSE_ID + " INTEGER,"
+                    + COLUMN_DATE + " TEXT,"
+                    + COLUMN_STATUS + " TEXT,"
+                    + "FOREIGN KEY(" + COLUMN_COURSE_ID + ") REFERENCES " + TABLE_YOGA_COURSE + "(" + COLUMN_ID + ")"
+                    + ")";
+            db.execSQL(CREATE_TABLE_CLASS_INSTANCE);
+
+            // Create Bookings table
+            String CREATE_TABLE_BOOKINGS = "CREATE TABLE " + TABLE_BOOKINGS + "("
+                    + COLUMN_BOOKING_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_BOOKING_CLASS_ID + " INTEGER,"
+                    + COLUMN_BOOKING_USER_ID + " INTEGER,"
+                    + "FOREIGN KEY(" + COLUMN_BOOKING_CLASS_ID + ") REFERENCES " + TABLE_CLASS_INSTANCE + "(" + COLUMN_INSTANCE_ID + "),"
+                    + "FOREIGN KEY(" + COLUMN_BOOKING_USER_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")"
+                    + ")";
+            db.execSQL(CREATE_TABLE_BOOKINGS);
+
+            Log.d(this.getClass().getName(), "Database tables created successfully");
         } catch (Exception e) {
             Log.e("DatabaseHelper", "Error creating tables", e);
-            throw new RuntimeException(e);
         }
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 3) {
-            // Add User table if upgrading from version 2 or lower
-            String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS " + TABLE_USER + "(" +
-                    COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_USER_NAME + " TEXT NOT NULL, " +
-                    COLUMN_USER_EMAIL + " TEXT NOT NULL UNIQUE, " +
-                    COLUMN_USER_PASSWORD + " TEXT NOT NULL, " +
-                    COLUMN_USER_ROLE + " TEXT NOT NULL DEFAULT 'admin', " +
-                    COLUMN_USER_CREATED_DATE + " TEXT NOT NULL" +
-                    ")";
-            db.execSQL(CREATE_TABLE_USER);
-        }
+        // Drop older tables if existed
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKINGS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
+        
+        // Create tables again
+        onCreate(db);
         
         Log.d(this.getClass().getName(), "Database upgraded to version " + newVersion);
     }
@@ -668,5 +681,93 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("name", user.getName());
         values.put("email", user.getEmail());
         return db.update("users", values, "_id = ?", new String[]{String.valueOf(user.getId())}) > 0;
+    }
+
+    // Booking related methods
+    public long createBooking(int classId, long userId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BOOKING_CLASS_ID, classId);
+        values.put(COLUMN_BOOKING_USER_ID, userId);
+        return db.insert(TABLE_BOOKINGS, null, values);
+    }
+
+    public List<Booking> getAllBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        String query = "SELECT b." + COLUMN_BOOKING_ID + ", b." + COLUMN_BOOKING_CLASS_ID + ", b." + COLUMN_BOOKING_USER_ID + ", "
+                + "u." + COLUMN_USER_EMAIL + ", "
+                + "ci." + COLUMN_DATE + ", "
+                + "yc." + COLUMN_TIME + ", "
+                + "yc." + COLUMN_PRICE + ", "
+                + "yc." + COLUMN_DURATION
+                + " FROM " + TABLE_BOOKINGS + " b"
+                + " JOIN " + TABLE_USER + " u ON b." + COLUMN_BOOKING_USER_ID + " = u." + COLUMN_ID
+                + " JOIN " + TABLE_CLASS_INSTANCE + " ci ON b." + COLUMN_BOOKING_CLASS_ID + " = ci." + COLUMN_INSTANCE_ID
+                + " JOIN " + TABLE_YOGA_COURSE + " yc ON ci." + COLUMN_COURSE_ID + " = yc." + COLUMN_ID
+                + " ORDER BY ci." + COLUMN_DATE + " ASC";
+
+        SQLiteDatabase dbReadable = this.getReadableDatabase();
+        Cursor cursor = dbReadable.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Booking booking = new Booking(
+                    cursor.getInt(0),    // booking_id
+                    cursor.getInt(1),    // class_id
+                    cursor.getInt(2),    // user_id
+                    cursor.getString(3), // user_email
+                    cursor.getString(4), // class_date
+                    cursor.getString(5), // course_time
+                    cursor.getDouble(6), // price
+                    cursor.getInt(7)     // duration
+                );
+                bookings.add(booking);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return bookings;
+    }
+
+    public List<Booking> getBookingsByUserId(long userId) {
+        List<Booking> bookings = new ArrayList<>();
+        String query = "SELECT b." + COLUMN_BOOKING_ID + ", b." + COLUMN_BOOKING_CLASS_ID + ", b." + COLUMN_BOOKING_USER_ID + ", "
+                + "u." + COLUMN_USER_EMAIL + ", "
+                + "ci." + COLUMN_DATE + ", "
+                + "yc." + COLUMN_TIME + ", "
+                + "yc." + COLUMN_PRICE + ", "
+                + "yc." + COLUMN_DURATION
+                + " FROM " + TABLE_BOOKINGS + " b"
+                + " JOIN " + TABLE_USER + " u ON b." + COLUMN_BOOKING_USER_ID + " = u." + COLUMN_ID
+                + " JOIN " + TABLE_CLASS_INSTANCE + " ci ON b." + COLUMN_BOOKING_CLASS_ID + " = ci." + COLUMN_INSTANCE_ID
+                + " JOIN " + TABLE_YOGA_COURSE + " yc ON ci." + COLUMN_COURSE_ID + " = yc." + COLUMN_ID
+                + " WHERE b." + COLUMN_BOOKING_USER_ID + " = ?"
+                + " ORDER BY ci." + COLUMN_DATE + " ASC";
+
+        SQLiteDatabase dbReadable = this.getReadableDatabase();
+        Cursor cursor = dbReadable.rawQuery(query, new String[]{String.valueOf(userId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Booking booking = new Booking(
+                    cursor.getInt(0),    // booking_id
+                    cursor.getInt(1),    // class_id
+                    cursor.getInt(2),    // user_id
+                    cursor.getString(3), // user_email
+                    cursor.getString(4), // class_date
+                    cursor.getString(5), // course_time
+                    cursor.getDouble(6), // price
+                    cursor.getInt(7)     // duration
+                );
+                bookings.add(booking);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return bookings;
+    }
+
+    public boolean deleteBooking(int bookingId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_BOOKINGS, COLUMN_BOOKING_ID + " = ?",
+                new String[]{String.valueOf(bookingId)}) > 0;
     }
 }

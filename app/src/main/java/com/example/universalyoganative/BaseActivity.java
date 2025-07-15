@@ -45,7 +45,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                     return true;
                 } else if (itemId == R.id.navigation_bookings) {
-                    Toast.makeText(this, "Bookings - Coming soon!", Toast.LENGTH_SHORT).show();
+                    if (!(this instanceof BookingsActivity)) {
+                        startActivity(new Intent(this, BookingsActivity.class));
+                        finish();
+                    }
                     return true;
                 }
                 return false;
@@ -58,6 +61,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 navView.setSelectedItemId(R.id.navigation_profile);
             } else if (this instanceof AccountActivity) {
                 navView.setSelectedItemId(R.id.navigation_account);
+            } else if (this instanceof BookingsActivity) {
+                navView.setSelectedItemId(R.id.navigation_bookings);
             }
         }
     }

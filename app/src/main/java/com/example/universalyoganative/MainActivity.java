@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,15 @@ public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCo
     private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
     private List<YogaCourse> courseList;
     private SessionManager sessionManager;
+
+    private BottomNavigationView.OnNavigationItemSelectedListener navListener =
+            item -> {
+                if (item.getItemId() == R.id.navigation_bookings) {
+                    startActivity(new Intent(MainActivity.this, BookingsActivity.class));
+                    return true;
+                }
+                return false;
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
