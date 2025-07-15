@@ -56,10 +56,8 @@ public class BookingsActivity extends BaseActivity implements BookingAdapter.OnB
     }
 
     private void loadBookings() {
-        SessionManager sessionManager = new SessionManager(this);
-        long userId = sessionManager.getUserId();
-        
-        List<Booking> bookings = dbHelper.getBookingsByUserId(userId);
+        // Load all bookings from all users
+        List<Booking> bookings = dbHelper.getAllBookings();
         
         if (bookings.isEmpty()) {
             tvNoBookings.setVisibility(View.VISIBLE);

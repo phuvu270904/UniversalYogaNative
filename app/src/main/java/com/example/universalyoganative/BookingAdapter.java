@@ -36,6 +36,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         Booking booking = bookings.get(position);
         
         holder.tvBookingId.setText("Booking #" + booking.getBookingId());
+        holder.tvClassId.setText("Class ID: " + booking.getClassId());
         holder.tvUserEmail.setText("User: " + booking.getUserEmail());
         holder.tvClassDate.setText("Date: " + booking.getClassDate());
         holder.tvCourseTime.setText("Time: " + booking.getCourseTime());
@@ -61,6 +62,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvBookingId;
+        TextView tvClassId;
         TextView tvUserEmail;
         TextView tvClassDate;
         TextView tvCourseTime;
@@ -70,6 +72,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         ViewHolder(View itemView) {
             super(itemView);
             tvBookingId = itemView.findViewById(R.id.tvBookingId);
+            tvClassId = itemView.findViewById(R.id.tvClassId);
             tvUserEmail = itemView.findViewById(R.id.tvUserEmail);
             tvClassDate = itemView.findViewById(R.id.tvClassDate);
             tvCourseTime = itemView.findViewById(R.id.tvCourseTime);
