@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,16 +32,33 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
     private YogaCourseAdapter courseAdapter;
     private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
     private List<YogaCourse> courseList;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize session manager
+        sessionManager = new SessionManager(this);
+
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            navigateToLogin();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         helper = new DatabaseHelper(getApplicationContext());
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Set toolbar title with welcome message
+        User currentUser = sessionManager.getLoggedInUser();
+        if (currentUser != null && getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Welcome, " + currentUser.getName());
+        }
 
         initializeViews();
         
@@ -209,5 +228,43 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         Intent intent = new Intent(this, CourseDetailActivity.class);
         intent.putExtra("course_id", course.getId());
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        
+        if (id == R.id.action_logout) {
+            showLogoutDialog();
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout", (dialog, which) -> {
+                    sessionManager.logoutUser();
+                    Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+                    navigateToLogin();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void navigateToLogin() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

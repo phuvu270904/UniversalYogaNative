@@ -7,15 +7,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import java.util.ArrayList;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3; // Incremented for User table
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
     private static final String TABLE_CLASS_INSTANCE = "ClassInstance";
+    private static final String TABLE_USER = "User";
 
     // YogaCourse table columns
     private static final String COLUMN_ID = "_id";
@@ -41,6 +44,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_PHOTO_PATH = "photo_path";
     private static final String COLUMN_LATITUDE = "latitude";
     private static final String COLUMN_LONGITUDE = "longitude";
+
+    // User table columns
+    private static final String COLUMN_USER_ID = "_id";
+    private static final String COLUMN_USER_NAME = "name";
+    private static final String COLUMN_USER_EMAIL = "email";
+    private static final String COLUMN_USER_PASSWORD = "password";
+    private static final String COLUMN_USER_ROLE = "role";
+    private static final String COLUMN_USER_CREATED_DATE = "created_date";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -83,6 +94,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     ")";
             db.execSQL(CREATE_TABLE_CLASSINSTANCE);
 
+            // Create User table
+            String CREATE_TABLE_USER = "CREATE TABLE " + TABLE_USER + "(" +
+                    COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_USER_NAME + " TEXT NOT NULL, " +
+                    COLUMN_USER_EMAIL + " TEXT NOT NULL UNIQUE, " +
+                    COLUMN_USER_PASSWORD + " TEXT NOT NULL, " +
+                    COLUMN_USER_ROLE + " TEXT NOT NULL DEFAULT 'admin', " +
+                    COLUMN_USER_CREATED_DATE + " TEXT NOT NULL" +
+                    ")";
+            db.execSQL(CREATE_TABLE_USER);
+
         } catch (Exception e) {
             Log.e("DatabaseHelper", "Error creating tables", e);
             throw new RuntimeException(e);
@@ -91,10 +113,205 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
-        Log.e(this.getClass().getName(), "Database upgrade to version " + newVersion + " - old data lost");
-        onCreate(db);
+        if (oldVersion < 3) {
+            // Add User table if upgrading from version 2 or lower
+            String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS " + TABLE_USER + "(" +
+                    COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_USER_NAME + " TEXT NOT NULL, " +
+                    COLUMN_USER_EMAIL + " TEXT NOT NULL UNIQUE, " +
+                    COLUMN_USER_PASSWORD + " TEXT NOT NULL, " +
+                    COLUMN_USER_ROLE + " TEXT NOT NULL DEFAULT 'admin', " +
+                    COLUMN_USER_CREATED_DATE + " TEXT NOT NULL" +
+                    ")";
+            db.execSQL(CREATE_TABLE_USER);
+        }
+        
+        Log.d(this.getClass().getName(), "Database upgraded to version " + newVersion);
+    }
+
+    // USER AUTHENTICATION METHODS
+
+    /**
+     * Hash password using SHA-256
+     */
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashedBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error hashing password", e);
+            return password; // Fallback to plain text (not recommended for production)
+        }
+    }
+
+    /**
+     * Register a new user
+     */
+    public long registerUser(String name, String email, String password, String role) {
+        // Check if email already exists
+        if (emailExists(email)) {
+            return -1; // Email already exists
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_NAME, name);
+        values.put(COLUMN_USER_EMAIL, email.toLowerCase().trim());
+        values.put(COLUMN_USER_PASSWORD, hashPassword(password));
+        values.put(COLUMN_USER_ROLE, role);
+        values.put(COLUMN_USER_CREATED_DATE, String.valueOf(System.currentTimeMillis()));
+        
+        return database.insertOrThrow(TABLE_USER, null, values);
+    }
+
+    /**
+     * Authenticate user login
+     */
+    public User authenticateUser(String email, String password) {
+        String hashedPassword = hashPassword(password);
+        String selection = COLUMN_USER_EMAIL + " = ? AND " + COLUMN_USER_PASSWORD + " = ?";
+        String[] selectionArgs = {email.toLowerCase().trim(), hashedPassword};
+        
+        Cursor cursor = database.query(TABLE_USER, null, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            User user = createUserFromCursor(cursor);
+            cursor.close();
+            return user;
+        }
+        
+        if (cursor != null) cursor.close();
+        return null;
+    }
+
+    /**
+     * Check if email already exists
+     */
+    public boolean emailExists(String email) {
+        String selection = COLUMN_USER_EMAIL + " = ?";
+        String[] selectionArgs = {email.toLowerCase().trim()};
+        
+        Cursor cursor = database.query(TABLE_USER, new String[]{COLUMN_USER_ID}, 
+                                     selection, selectionArgs, null, null, null);
+        
+        boolean exists = cursor != null && cursor.getCount() > 0;
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+
+    /**
+     * Get user by ID
+     */
+    public User getUserById(long userId) {
+        String selection = COLUMN_USER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(userId)};
+        
+        Cursor cursor = database.query(TABLE_USER, null, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            User user = createUserFromCursor(cursor);
+            cursor.close();
+            return user;
+        }
+        
+        if (cursor != null) cursor.close();
+        return null;
+    }
+
+    /**
+     * Get user by email
+     */
+    public User getUserByEmail(String email) {
+        String selection = COLUMN_USER_EMAIL + " = ?";
+        String[] selectionArgs = {email.toLowerCase().trim()};
+        
+        Cursor cursor = database.query(TABLE_USER, null, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            User user = createUserFromCursor(cursor);
+            cursor.close();
+            return user;
+        }
+        
+        if (cursor != null) cursor.close();
+        return null;
+    }
+
+    /**
+     * Get all users
+     */
+    public Cursor readAllUsers() {
+        return database.query(TABLE_USER, null, null, null, null, null, 
+                             COLUMN_USER_CREATED_DATE + " DESC");
+    }
+
+    /**
+     * Update user information
+     */
+    public int updateUser(long userId, String name, String email, String role) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_NAME, name);
+        values.put(COLUMN_USER_EMAIL, email.toLowerCase().trim());
+        values.put(COLUMN_USER_ROLE, role);
+        
+        return database.update(TABLE_USER, values, COLUMN_USER_ID + "=?", 
+                              new String[]{String.valueOf(userId)});
+    }
+
+    /**
+     * Change user password
+     */
+    public int changeUserPassword(long userId, String newPassword) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_PASSWORD, hashPassword(newPassword));
+        
+        return database.update(TABLE_USER, values, COLUMN_USER_ID + "=?", 
+                              new String[]{String.valueOf(userId)});
+    }
+
+    /**
+     * Delete user
+     */
+    public int deleteUser(long userId) {
+        return database.delete(TABLE_USER, COLUMN_USER_ID + "=?", 
+                              new String[]{String.valueOf(userId)});
+    }
+
+    /**
+     * Create User object from cursor
+     */
+    private User createUserFromCursor(Cursor cursor) {
+        User user = new User();
+        user.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)));
+        user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_NAME)));
+        user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_EMAIL)));
+        user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_PASSWORD)));
+        user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_ROLE)));
+        user.setCreatedDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_CREATED_DATE)));
+        return user;
+    }
+
+    /**
+     * Check if any admin users exist
+     */
+    public boolean hasAdminUsers() {
+        String selection = COLUMN_USER_ROLE + " = ?";
+        String[] selectionArgs = {"admin"};
+        
+        Cursor cursor = database.query(TABLE_USER, new String[]{COLUMN_USER_ID}, 
+                                     selection, selectionArgs, null, null, null);
+        
+        boolean hasAdmin = cursor != null && cursor.getCount() > 0;
+        if (cursor != null) cursor.close();
+        return hasAdmin;
     }
 
     // YOGA COURSE CRUD OPERATIONS
