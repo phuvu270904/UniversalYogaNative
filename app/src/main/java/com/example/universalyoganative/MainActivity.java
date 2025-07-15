@@ -1,47 +1,27 @@
 package com.example.universalyoganative;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCourseActionListener {
+public class MainActivity extends BaseActivity {
     public static DatabaseHelper helper;
-    private RecyclerView recyclerViewCourses;
-    private YogaCourseAdapter courseAdapter;
-    private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
-    private List<YogaCourse> courseList;
     private SessionManager sessionManager;
-
-    private BottomNavigationView.OnNavigationItemSelectedListener navListener =
-            item -> {
-                if (item.getItemId() == R.id.navigation_bookings) {
-                    startActivity(new Intent(MainActivity.this, BookingsActivity.class));
-                    return true;
-                }
-                return false;
-            };
+    private BottomNavigationView bottomNavigation;
+    private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +47,10 @@ public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCo
             getSupportActionBar().setTitle("Welcome, " + currentUser.getName());
         }
 
-        initializeViews();
-        setupRecyclerView();
-        setupClickListeners();
+        // Load default fragment (Home)
+        if (savedInstanceState == null) {
+            loadFragment(new HomeFragment(), "Home");
+        }
         
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -91,153 +72,69 @@ public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCo
     }
 
     private void initializeViews() {
-        recyclerViewCourses = findViewById(R.id.recyclerViewCourses);
-        tvCourseCount = findViewById(R.id.tvCourseCount);
-        tvInstanceCount = findViewById(R.id.tvInstanceCount);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-    }
-
-    private void setupRecyclerView() {
-        courseList = new ArrayList<>();
-        courseAdapter = new YogaCourseAdapter(courseList, this);
-        recyclerViewCourses.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewCourses.setAdapter(courseAdapter);
-    }
-
-    private void setupClickListeners() {
-        FloatingActionButton fabAddCourse = findViewById(R.id.fabAddCourse);
-        fabAddCourse.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, CreateYogaCourse.class);
-            startActivity(intent);
-        });
-
-        MaterialButton btnSearch = findViewById(R.id.btnSearch);
-        btnSearch.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-            startActivity(intent);
-        });
-
-        MaterialButton btnSync = findViewById(R.id.btnSync);
-        btnSync.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SyncActivity.class);
-            startActivity(intent);
-        });
-
-        MaterialButton btnResetDb = findViewById(R.id.btnResetDb);
-        btnResetDb.setOnClickListener(v -> showResetDatabaseDialog());
+        bottomNavigation = findViewById(R.id.nav_view);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        loadCourses();
-        updateStatistics();
+    protected void setupBottomNavigation() {
+        // Initialize views first to ensure bottomNavigation is not null
+        initializeViews();
+        
+        super.setupBottomNavigation();
+        
+        // Override the parent's navigation behavior for fragment-based navigation
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            String title = "";
+            
+            if (item.getItemId() == R.id.navigation_home) {
+                selectedFragment = new HomeFragment();
+                title = "Home";
+            } else if (item.getItemId() == R.id.navigation_account) {
+                selectedFragment = new AccountFragment();
+                title = "Account Management";
+            } else if (item.getItemId() == R.id.navigation_bookings) {
+                selectedFragment = new BookingsFragment();
+                title = "My Bookings";
+            } else if (item.getItemId() == R.id.navigation_profile) {
+                selectedFragment = new ProfileFragment();
+                title = "Profile";
+            }
+            
+            if (selectedFragment != null) {
+                loadFragment(selectedFragment, title);
+                return true;
+            }
+            
+            return false;
+        });
     }
 
-    private void loadCourses() {
-        courseList.clear();
-        Cursor cursor = helper.readAllYogaCourse();
+    private void loadFragment(Fragment fragment, String title) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
         
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                YogaCourse course = createCourseFromCursor(cursor);
-                courseList.add(course);
-            } while (cursor.moveToNext());
-            cursor.close();
+        // Check if this is the same type of fragment to avoid unnecessary replacements
+        if (currentFragment == null || !currentFragment.getClass().equals(fragment.getClass())) {
+            transaction.replace(R.id.fragment_container, fragment);
+            transaction.commit();
+            currentFragment = fragment;
         }
         
-        courseAdapter.notifyDataSetChanged();
-        updateEmptyState();
-    }
-
-    @SuppressLint("Range")
-    private YogaCourse createCourseFromCursor(Cursor cursor) {
-        YogaCourse course = new YogaCourse();
-        course.setId(cursor.getLong(cursor.getColumnIndex("_id")));
-        course.setDayOfWeek(cursor.getString(cursor.getColumnIndex("dayofweek")));
-        course.setTime(cursor.getString(cursor.getColumnIndex("time")));
-        course.setCapacity(cursor.getInt(cursor.getColumnIndex("capacity")));
-        course.setDuration(cursor.getInt(cursor.getColumnIndex("duration")));
-        course.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
-        course.setType(cursor.getString(cursor.getColumnIndex("type")));
-        course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
-        course.setDifficulty(cursor.getString(cursor.getColumnIndex("difficulty")));
-        course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
-        course.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
-        return course;
-    }
-
-    private void updateStatistics() {
-        Cursor courseCursor = helper.readAllYogaCourse();
-        int courseCount = courseCursor != null ? courseCursor.getCount() : 0;
-        if (courseCursor != null) courseCursor.close();
-        tvCourseCount.setText(String.valueOf(courseCount));
-
-        Cursor instanceCursor = helper.readAllClassInstances();
-        int instanceCount = instanceCursor != null ? instanceCursor.getCount() : 0;
-        if (instanceCursor != null) instanceCursor.close();
-        tvInstanceCount.setText(String.valueOf(instanceCount));
-    }
-
-    private void updateEmptyState() {
-        if (courseList.isEmpty()) {
-            tvEmptyState.setVisibility(View.VISIBLE);
-            recyclerViewCourses.setVisibility(View.GONE);
-        } else {
-            tvEmptyState.setVisibility(View.GONE);
-            recyclerViewCourses.setVisibility(View.VISIBLE);
+        // Update toolbar title
+        if (getSupportActionBar() != null) {
+            if (title.equals("Home")) {
+                // Show welcome message for home
+                User currentUser = sessionManager.getLoggedInUser();
+                if (currentUser != null) {
+                    getSupportActionBar().setTitle("Welcome, " + currentUser.getName());
+                } else {
+                    getSupportActionBar().setTitle("Home");
+                }
+            } else {
+                getSupportActionBar().setTitle(title);
+            }
         }
-    }
-
-    private void showResetDatabaseDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Reset Database")
-                .setMessage(R.string.confirm_reset_database)
-                .setPositiveButton("Reset", (dialog, which) -> {
-                    helper.resetDatabase();
-                    loadCourses();
-                    updateStatistics();
-                    Toast.makeText(this, "Database reset successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    @Override
-    public void onEditCourse(YogaCourse course) {
-        Intent intent = new Intent(this, EditYogaCourse.class);
-        intent.putExtra("course_id", course.getId());
-        startActivity(intent);
-    }
-
-    @Override
-    public void onDeleteCourse(YogaCourse course) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Course")
-                .setMessage(R.string.confirm_delete_course)
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    helper.deleteYogaCourse(course.getId());
-                    loadCourses();
-                    updateStatistics();
-                    Toast.makeText(this, R.string.course_deleted, Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    @Override
-    public void onViewInstances(YogaCourse course) {
-        Intent intent = new Intent(this, ClassInstanceActivity.class);
-        intent.putExtra("course_id", course.getId());
-        intent.putExtra("course_name", course.getType());
-        startActivity(intent);
-    }
-
-    @Override
-    public void onCourseClick(YogaCourse course) {
-        Intent intent = new Intent(this, CourseDetailActivity.class);
-        intent.putExtra("course_id", course.getId());
-        startActivity(intent);
     }
 
     @Override
@@ -276,5 +173,16 @@ public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCo
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // If not on home fragment, go to home fragment first
+        if (bottomNavigation.getSelectedItemId() != R.id.navigation_home) {
+            bottomNavigation.setSelectedItemId(R.id.navigation_home);
+        } else {
+            // If on home fragment, show exit dialog or exit app
+            super.onBackPressed();
+        }
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 4; // Incremented for Bookings table
+    private static final int DATABASE_VERSION = 5; // Incremented for ClassInstance table schema update
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
@@ -107,7 +107,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COLUMN_INSTANCE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_COURSE_ID + " INTEGER,"
                     + COLUMN_DATE + " TEXT,"
+                    + COLUMN_TEACHER + " TEXT,"
+                    + COLUMN_COMMENTS + " TEXT,"
+                    + COLUMN_PHOTO_PATH + " TEXT,"
+                    + COLUMN_LATITUDE + " REAL,"
+                    + COLUMN_LONGITUDE + " REAL,"
                     + COLUMN_STATUS + " TEXT,"
+                    + COLUMN_SYNC_STATUS + " INTEGER DEFAULT 0,"
                     + "FOREIGN KEY(" + COLUMN_COURSE_ID + ") REFERENCES " + TABLE_YOGA_COURSE + "(" + COLUMN_ID + ")"
                     + ")";
             db.execSQL(CREATE_TABLE_CLASS_INSTANCE);
