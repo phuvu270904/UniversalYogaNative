@@ -84,13 +84,13 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
                 return true;
-            } else if (itemId == R.id.navigation_schedule) {
-                Toast.makeText(this, "Schedule - Coming soon!", Toast.LENGTH_SHORT).show();
+            } else if (itemId == R.id.navigation_account) {
+                Toast.makeText(this, "Account - Coming soon!", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.navigation_profile) {
                 return true;
-            } else if (itemId == R.id.navigation_settings) {
-                Toast.makeText(this, "Settings - Coming soon!", Toast.LENGTH_SHORT).show();
+            } else if (itemId == R.id.navigation_bookings) {
+                Toast.makeText(this, "Bookings - Coming soon!", Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;

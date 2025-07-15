@@ -7,14 +7,14 @@
 
     
     <item
-        android:id="@+id/navigation_settings"
+        android:id="@+id/navigation_account"
         android:icon="@drawable/ic_person"
         android:title="Account" />
 
     <item
-        android:id="@+id/navigation_schedule"
+        android:id="@+id/navigation_bookings"
         android:icon="@android:drawable/ic_menu_my_calendar"
-        android:title="Schedule" />
+        android:title="Bookings" />
 
     <item
         android:id="@+id/navigation_profile"

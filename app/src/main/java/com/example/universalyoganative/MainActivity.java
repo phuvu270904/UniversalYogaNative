@@ -95,15 +95,15 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
             if (itemId == R.id.navigation_home) {
                 // Already on home, do nothing
                 return true;
-            } else if (itemId == R.id.navigation_schedule) {
-                Toast.makeText(this, "Schedule - Coming soon!", Toast.LENGTH_SHORT).show();
+            } else if (itemId == R.id.navigation_account) {
+                Toast.makeText(this, "Account - Coming soon!", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.navigation_profile) {
                 startActivity(new Intent(this, ProfileActivity.class));
                 finish();
                 return true;
-            } else if (itemId == R.id.navigation_settings) {
-                Toast.makeText(this, "Settings - Coming soon!", Toast.LENGTH_SHORT).show();
+            } else if (itemId == R.id.navigation_bookings) {
+                Toast.makeText(this, "Bookings - Coming soon!", Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
