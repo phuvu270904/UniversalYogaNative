@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ConfirmCourseActivity">
@@ -36,11 +37,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Please review your course details before saving:"
-                android:textSize="16sp"
-                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="24dp"
-                android:gravity="center" />
+                android:gravity="center"
+                android:text="Please review your course details before saving:"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp" />
 
             <!-- Course Information Card -->
             <com.google.android.material.card.MaterialCardView
@@ -59,25 +60,25 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
                         android:text="Course Information"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
-                        android:layout_marginBottom="16dp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Type:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvType"
@@ -92,16 +93,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Difficulty:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvDifficulty"
@@ -116,16 +117,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Instructor:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvInstructor"
@@ -140,16 +141,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
                             android:text="Description:"
-                            android:textStyle="bold"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:layout_marginBottom="4dp" />
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvDescription"
@@ -181,25 +182,25 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
                         android:text="Schedule Information"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
-                        android:layout_marginBottom="16dp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Day:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvDayOfWeek"
@@ -214,16 +215,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Time:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvTime"
@@ -238,16 +239,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Duration:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvDuration"
@@ -262,16 +263,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Capacity:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvCapacity"
@@ -286,16 +287,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Price:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvPrice"
@@ -329,11 +330,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
                         android:text="Location Information"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
-                        android:layout_marginBottom="16dp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -345,8 +346,8 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Location:"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvLocation"
@@ -366,25 +367,25 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginTop="16dp"
                 android:gravity="end"
-                android:layout_marginTop="16dp">
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBack"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/btn_back"
                     android:layout_marginEnd="16dp"
-                    style="@style/Widget.Material3.Button.TextButton" />
+                    android:text="@string/btn_back" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConfirm"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btn_confirm"
-                    app:icon="@android:drawable/ic_menu_save"
-                    style="@style/Widget.Material3.Button" />
+                    app:icon="@android:drawable/ic_menu_save" />
 
             </LinearLayout>
 
