@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,27 +19,23 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements YogaCourseAdapter.OnCourseActionListener {
+public class MainActivity extends BaseActivity implements YogaCourseAdapter.OnCourseActionListener {
     public static DatabaseHelper helper;
     private RecyclerView recyclerViewCourses;
     private YogaCourseAdapter courseAdapter;
     private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
     private List<YogaCourse> courseList;
     private SessionManager sessionManager;
-    private BottomNavigationView navView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Initialize session manager
+        // Initialize session manager before calling super (which sets content view)
         sessionManager = new SessionManager(this);
 
         // Check if user is logged in
@@ -49,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
             return;
         }
 
-        setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
 
         helper = new DatabaseHelper(getApplicationContext());
 
@@ -65,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         initializeViews();
         setupRecyclerView();
         setupClickListeners();
-        setupBottomNavigation();
         
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -81,33 +75,16 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
         });
     }
 
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_main;
+    }
+
     private void initializeViews() {
         recyclerViewCourses = findViewById(R.id.recyclerViewCourses);
         tvCourseCount = findViewById(R.id.tvCourseCount);
         tvInstanceCount = findViewById(R.id.tvInstanceCount);
         tvEmptyState = findViewById(R.id.tvEmptyState);
-        navView = findViewById(R.id.nav_view);
-    }
-
-    private void setupBottomNavigation() {
-        navView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.navigation_home) {
-                // Already on home, do nothing
-                return true;
-            } else if (itemId == R.id.navigation_account) {
-                Toast.makeText(this, "Account - Coming soon!", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.navigation_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                finish();
-                return true;
-            } else if (itemId == R.id.navigation_bookings) {
-                Toast.makeText(this, "Bookings - Coming soon!", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
-        });
     }
 
     private void setupRecyclerView() {

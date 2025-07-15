@@ -9,13 +9,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -23,7 +22,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CourseDetailActivity extends AppCompatActivity {
+public class CourseDetailActivity extends BaseActivity {
     private long courseId;
     private YogaCourse course;
     
@@ -41,9 +40,6 @@ public class CourseDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_course_detail);
-        
         // Get course ID from intent
         courseId = getIntent().getLongExtra("course_id", -1);
         if (courseId == -1) {
@@ -51,6 +47,8 @@ public class CourseDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
+        
+        super.onCreate(savedInstanceState);
         
         setupToolbar();
         initializeViews();
@@ -70,6 +68,11 @@ public class CourseDetailActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, statusBarHeight, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_course_detail;
     }
 
     private void setupToolbar() {

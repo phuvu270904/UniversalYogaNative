@@ -26,6 +26,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -224,20 +225,20 @@
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/class_instance_item" />
 
-            <!-- Floating Action Button -->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fabAddInstance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                android:contentDescription="@string/add_class_instance"
-                android:src="@android:drawable/ic_input_add"
-                app:backgroundTint="@color/md_theme_primary"
-                app:tint="@color/md_theme_onPrimary" />
-
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddInstance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="96dp"
+        android:contentDescription="Add new class instance"
+        app:srcCompat="@drawable/ic_add" />
+
+    <include layout="@layout/bottom_navigation" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

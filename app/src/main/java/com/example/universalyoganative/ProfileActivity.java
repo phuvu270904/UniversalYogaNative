@@ -15,30 +15,31 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
     private SessionManager sessionManager;
     private TextView tvName, tvEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
         sessionManager = new SessionManager(this);
-
+        
         // Check if user is logged in
         if (!sessionManager.isLoggedIn()) {
-            navigateToLogin();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
             return;
+        }
+        
+        super.onCreate(savedInstanceState);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Profile");
         }
 
         initializeViews();
-        setupToolbar();
         displayUserInfo();
-        setupBottomNavigation();
-        setupLogoutButton();
-        
-        // Handle window insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             
@@ -53,72 +54,21 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_profile;
+    }
+
     private void initializeViews() {
         tvName = findViewById(R.id.tvName);
         tvEmail = findViewById(R.id.tvEmail);
     }
 
-    private void setupToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Profile");
-        }
-    }
-
     private void displayUserInfo() {
-        User currentUser = sessionManager.getLoggedInUser();
-        if (currentUser != null) {
-            tvName.setText(currentUser.getName());
-            tvEmail.setText(currentUser.getEmail());
+        User user = sessionManager.getLoggedInUser();
+        if (user != null) {
+            tvName.setText(user.getName());
+            tvEmail.setText(user.getEmail());
         }
-    }
-
-    private void setupBottomNavigation() {
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        navView.setSelectedItemId(R.id.navigation_profile);
-        
-        navView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.navigation_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
-                return true;
-            } else if (itemId == R.id.navigation_account) {
-                Toast.makeText(this, "Account - Coming soon!", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.navigation_profile) {
-                return true;
-            } else if (itemId == R.id.navigation_bookings) {
-                Toast.makeText(this, "Bookings - Coming soon!", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
-        });
-    }
-
-    private void setupLogoutButton() {
-        MaterialButton btnLogout = findViewById(R.id.btnLogout);
-        btnLogout.setOnClickListener(v -> showLogoutDialog());
-    }
-
-    private void showLogoutDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to logout?")
-                .setPositiveButton("Logout", (dialog, which) -> {
-                    sessionManager.logoutUser();
-                    Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-                    navigateToLogin();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void navigateToLogin() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 } 
