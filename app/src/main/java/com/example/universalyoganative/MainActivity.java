@@ -99,7 +99,8 @@ public class MainActivity extends AppCompatActivity implements YogaCourseAdapter
                 Toast.makeText(this, "Schedule - Coming soon!", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.navigation_profile) {
-                Toast.makeText(this, "Profile - Coming soon!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
                 return true;
             } else if (itemId == R.id.navigation_settings) {
                 Toast.makeText(this, "Settings - Coming soon!", Toast.LENGTH_SHORT).show();
