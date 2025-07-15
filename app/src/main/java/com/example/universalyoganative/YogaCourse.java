@@ -13,7 +13,6 @@ public class YogaCourse implements Serializable {
     private String description;
     private String difficulty;
     private String location;
-    private String instructor;
     private String createdDate;
     private int syncStatus;
 
@@ -24,7 +23,7 @@ public class YogaCourse implements Serializable {
     // Constructor with essential fields
     public YogaCourse(String dayOfWeek, String time, int capacity, int duration, 
                      float price, String type, String description, String difficulty, 
-                     String location, String instructor) {
+                     String location) {
         this.dayOfWeek = dayOfWeek;
         this.time = time;
         this.capacity = capacity;
@@ -34,7 +33,6 @@ public class YogaCourse implements Serializable {
         this.description = description;
         this.difficulty = difficulty;
         this.location = location;
-        this.instructor = instructor;
         this.syncStatus = 0; // Not synced by default
     }
 
@@ -117,14 +115,6 @@ public class YogaCourse implements Serializable {
 
     public void setLocation(String location) {
         this.location = location;
-    }
-
-    public String getInstructor() {
-        return instructor;
-    }
-
-    public void setInstructor(String instructor) {
-        this.instructor = instructor;
     }
 
     public String getCreatedDate() {

@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 5; // Incremented for ClassInstance table schema update
+    private static final int DATABASE_VERSION = 6; // Incremented for removing instructor column
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
@@ -33,7 +33,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_DIFFICULTY = "difficulty";
     private static final String COLUMN_LOCATION = "location";
-    private static final String COLUMN_INSTRUCTOR = "instructor";
     private static final String COLUMN_CREATED_DATE = "created_date";
     private static final String COLUMN_SYNC_STATUS = "sync_status";
     private static final String COLUMN_TITLE = "title";
@@ -85,7 +84,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COLUMN_DESCRIPTION + " TEXT,"
                     + COLUMN_DIFFICULTY + " TEXT,"
                     + COLUMN_LOCATION + " TEXT,"
-                    + COLUMN_INSTRUCTOR + " TEXT,"
                     + COLUMN_CREATED_DATE + " TEXT,"
                     + COLUMN_SYNC_STATUS + " INTEGER DEFAULT 0"
                     + ")";
@@ -338,7 +336,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public long createNewYogaCourse(String dayOfWeek, String time, int capacity, int duration, 
                                    float price, String type, String description, String difficulty, 
-                                   String location, String instructor) {
+                                   String location) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_DAY_OF_WEEK, dayOfWeek);
         values.put(COLUMN_TIME, time);
@@ -349,7 +347,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, description);
         values.put(COLUMN_DIFFICULTY, difficulty);
         values.put(COLUMN_LOCATION, location);
-        values.put(COLUMN_INSTRUCTOR, instructor);
         values.put(COLUMN_CREATED_DATE, String.valueOf(System.currentTimeMillis()));
         values.put(COLUMN_SYNC_STATUS, 0);
         
@@ -368,7 +365,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public int updateYogaCourse(long id, String dayOfWeek, String time, int capacity, int duration,
                                float price, String type, String description, String difficulty,
-                               String location, String instructor) {
+                               String location) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_DAY_OF_WEEK, dayOfWeek);
         values.put(COLUMN_TIME, time);
@@ -379,7 +376,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, description);
         values.put(COLUMN_DIFFICULTY, difficulty);
         values.put(COLUMN_LOCATION, location);
-        values.put(COLUMN_INSTRUCTOR, instructor);
         values.put(COLUMN_SYNC_STATUS, 0);
         
         return database.update(TABLE_YOGA_COURSE, values, COLUMN_ID + "=?", 
@@ -450,13 +446,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // SEARCH FUNCTIONALITY
-
-    public Cursor searchCoursesByTeacher(String teacherName) {
-        String selection = COLUMN_INSTRUCTOR + " LIKE ?";
-        String[] selectionArgs = {"%" + teacherName + "%"};
-        return database.query(TABLE_YOGA_COURSE, null, selection, selectionArgs, null, null, 
-                             COLUMN_DAY_OF_WEEK + " ASC, " + COLUMN_TIME + " ASC");
-    }
 
     public Cursor searchInstancesByTeacher(String teacherName) {
         String selection = COLUMN_TEACHER + " LIKE ?";
@@ -532,12 +521,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             selection.append("(")
                     .append(COLUMN_TYPE).append(" LIKE ? OR ")
-                    .append(COLUMN_INSTRUCTOR).append(" LIKE ? OR ")
                     .append(COLUMN_DESCRIPTION).append(" LIKE ? OR ")
                     .append(COLUMN_LOCATION).append(" LIKE ?")
                     .append(")");
             String searchPattern = "%" + searchQuery.trim() + "%";
-            selectionArgs.add(searchPattern);
             selectionArgs.add(searchPattern);
             selectionArgs.add(searchPattern);
             selectionArgs.add(searchPattern);

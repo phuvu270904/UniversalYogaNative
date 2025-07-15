@@ -150,14 +150,6 @@
                             tools:text="Beginner" />
 
                         <TextView
-                            android:id="@+id/tvInstructor"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/md_theme_onSurface"
-                            android:textSize="16sp"
-                            tools:text="John Doe" />
-
-                        <TextView
                             android:id="@+id/tvLocation"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

@@ -118,30 +118,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Instructor:"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvInstructor"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:text="Sarah Johnson"
-                            android:textColor="?attr/colorOnSurface" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
                         android:orientation="vertical">
 
                         <TextView

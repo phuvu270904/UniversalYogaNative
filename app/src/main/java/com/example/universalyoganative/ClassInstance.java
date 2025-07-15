@@ -146,6 +146,33 @@ public class ClassInstance implements Serializable {
         }
     }
 
+    /**
+     * Validates if the date matches the expected day of the week from the course
+     * @param expectedDayOfWeek The day of week from the YogaCourse (e.g., "Tuesday")
+     * @return true if the date matches the expected day of week, false otherwise
+     */
+    public boolean isDateMatchingDayOfWeek(String expectedDayOfWeek) {
+        if (expectedDayOfWeek == null || expectedDayOfWeek.trim().isEmpty()) {
+            return false;
+        }
+        
+        String actualDayOfWeek = getDayOfWeek();
+        return expectedDayOfWeek.trim().equalsIgnoreCase(actualDayOfWeek.trim());
+    }
+
+    /**
+     * Gets a formatted string showing the validation result
+     * @param expectedDayOfWeek The day of week from the YogaCourse
+     * @return A formatted string indicating if the date matches the day of week
+     */
+    public String getDayOfWeekValidationMessage(String expectedDayOfWeek) {
+        if (isDateMatchingDayOfWeek(expectedDayOfWeek)) {
+            return "✓ Date matches " + expectedDayOfWeek;
+        } else {
+            return "✗ Date should be on " + expectedDayOfWeek + " (current: " + getDayOfWeek() + ")";
+        }
+    }
+
     @Override
     public String toString() {
         return "ClassInstance{" +

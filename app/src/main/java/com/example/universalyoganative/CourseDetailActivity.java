@@ -27,7 +27,7 @@ public class CourseDetailActivity extends BaseActivity {
     private YogaCourse course;
     
     // UI Components
-    private TextView tvType, tvDifficulty, tvInstructor, tvDescription;
+    private TextView tvType, tvDifficulty, tvDescription;
     private TextView tvDayOfWeek, tvTime, tvDuration, tvCapacity, tvPrice;
     private TextView tvLocation, tvInstanceCount, tvEmptyState;
     private MaterialButton btnEdit, btnDelete;
@@ -91,7 +91,6 @@ public class CourseDetailActivity extends BaseActivity {
         // Course information
         tvType = findViewById(R.id.tvType);
         tvDifficulty = findViewById(R.id.tvDifficulty);
-        tvInstructor = findViewById(R.id.tvInstructor);
         tvDescription = findViewById(R.id.tvDescription);
         
         // Schedule information
@@ -181,7 +180,6 @@ public class CourseDetailActivity extends BaseActivity {
             course.setDuration(cursor.getInt(cursor.getColumnIndex("duration")));
             course.setCapacity(cursor.getInt(cursor.getColumnIndex("capacity")));
             course.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
-            course.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
             course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
             course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
             
@@ -196,7 +194,6 @@ public class CourseDetailActivity extends BaseActivity {
     private void populateFields() {
         tvType.setText(course.getType());
         tvDifficulty.setText(course.getDifficulty() != null ? course.getDifficulty() : "All Levels");
-        tvInstructor.setText(course.getInstructor() != null ? course.getInstructor() : "TBA");
         tvDescription.setText(course.getDescription() != null && !course.getDescription().isEmpty() 
                 ? course.getDescription() : "No description available");
         

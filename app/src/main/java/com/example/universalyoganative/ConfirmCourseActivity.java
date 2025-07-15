@@ -18,7 +18,7 @@ public class ConfirmCourseActivity extends AppCompatActivity {
     private boolean isEditing;
     private long courseId;
     
-    private MaterialTextView tvType, tvDifficulty, tvInstructor, tvDescription;
+    private MaterialTextView tvType, tvDifficulty, tvDescription;
     private MaterialTextView tvDayOfWeek, tvTime, tvDuration, tvCapacity, tvPrice;
     private MaterialTextView tvLocation;
     private MaterialButton btnConfirm, btnBack;
@@ -74,7 +74,6 @@ public class ConfirmCourseActivity extends AppCompatActivity {
         // Course information
         tvType = findViewById(R.id.tvType);
         tvDifficulty = findViewById(R.id.tvDifficulty);
-        tvInstructor = findViewById(R.id.tvInstructor);
         tvDescription = findViewById(R.id.tvDescription);
         
         // Schedule information
@@ -95,7 +94,6 @@ public class ConfirmCourseActivity extends AppCompatActivity {
     private void populateFields() {
         tvType.setText(course.getType());
         tvDifficulty.setText(course.getDifficulty() != null ? course.getDifficulty() : "All Levels");
-        tvInstructor.setText(course.getInstructor());
         tvDescription.setText(course.getDescription() != null && !course.getDescription().isEmpty() 
                 ? course.getDescription() : "No description provided");
         
@@ -132,8 +130,7 @@ public class ConfirmCourseActivity extends AppCompatActivity {
                     course.getType(),
                     course.getDescription(),
                     course.getDifficulty(),
-                    course.getLocation(),
-                    course.getInstructor()
+                    course.getLocation()
             );
             
             if (result > 0) {
@@ -164,8 +161,7 @@ public class ConfirmCourseActivity extends AppCompatActivity {
                     course.getType(),
                     course.getDescription(),
                     course.getDifficulty(),
-                    course.getLocation(),
-                    course.getInstructor()
+                    course.getLocation()
             );
             
             if (result > 0) {

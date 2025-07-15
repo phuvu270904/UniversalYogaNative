@@ -35,8 +35,8 @@ public class EditYogaCourse extends AppCompatActivity {
     
     // UI Components
     private AutoCompleteTextView spType, spDifficulty, spDayOfWeek, spTime, spDuration, spCapacity;
-    private TextInputEditText etInstructor, etDescription, etPrice, etLocation;
-    private TextInputLayout layoutInstructor, layoutDescription, layoutPrice, layoutLocation;
+    private TextInputEditText etDescription, etPrice, etLocation;
+    private TextInputLayout layoutDescription, layoutPrice, layoutLocation;
     private MaterialButton btnSave, btnCancel, btnGetLocation;
     private CircularProgressIndicator progressIndicator;
     
@@ -107,13 +107,11 @@ public class EditYogaCourse extends AppCompatActivity {
         spCapacity = findViewById(R.id.spCapacity);
         
         // Text inputs
-        etInstructor = findViewById(R.id.etInstructor);
         etDescription = findViewById(R.id.etDescription);
         etPrice = findViewById(R.id.etPrice);
         etLocation = findViewById(R.id.etLocation);
         
         // Input layouts for validation
-        layoutInstructor = (TextInputLayout) etInstructor.getParent().getParent();
         layoutDescription = (TextInputLayout) etDescription.getParent().getParent();
         layoutPrice = (TextInputLayout) etPrice.getParent().getParent();
         layoutLocation = (TextInputLayout) etLocation.getParent().getParent();
@@ -185,7 +183,6 @@ public class EditYogaCourse extends AppCompatActivity {
             originalCourse.setDuration(cursor.getInt(cursor.getColumnIndex("duration")));
             originalCourse.setCapacity(cursor.getInt(cursor.getColumnIndex("capacity")));
             originalCourse.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
-            originalCourse.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
             originalCourse.setDescription(cursor.getString(cursor.getColumnIndex("description")));
             originalCourse.setLocation(cursor.getString(cursor.getColumnIndex("location")));
             
@@ -205,7 +202,6 @@ public class EditYogaCourse extends AppCompatActivity {
         spDuration.setText(String.valueOf(originalCourse.getDuration()), false);
         spCapacity.setText(String.valueOf(originalCourse.getCapacity()), false);
         etPrice.setText(String.valueOf(originalCourse.getPrice()));
-        etInstructor.setText(originalCourse.getInstructor() != null ? originalCourse.getInstructor() : "");
         etDescription.setText(originalCourse.getDescription() != null ? originalCourse.getDescription() : "");
         etLocation.setText(originalCourse.getLocation() != null ? originalCourse.getLocation() : "");
     }
@@ -260,12 +256,6 @@ public class EditYogaCourse extends AppCompatActivity {
             }
         }
         
-        // Validate instructor (required)
-        if (TextUtils.isEmpty(etInstructor.getText())) {
-            layoutInstructor.setError(getString(R.string.error_required_field));
-            isValid = false;
-        }
-        
         return isValid;
     }
 
@@ -276,7 +266,6 @@ public class EditYogaCourse extends AppCompatActivity {
     }
 
     private void clearErrors() {
-        layoutInstructor.setError(null);
         layoutDescription.setError(null);
         layoutPrice.setError(null);
         layoutLocation.setError(null);
@@ -304,7 +293,6 @@ public class EditYogaCourse extends AppCompatActivity {
         course.setDuration(Integer.parseInt(spDuration.getText().toString()));
         course.setCapacity(Integer.parseInt(spCapacity.getText().toString()));
         course.setPrice(Float.parseFloat(etPrice.getText().toString()));
-        course.setInstructor(etInstructor.getText().toString());
         course.setDescription(etDescription.getText().toString());
         course.setLocation(etLocation.getText().toString());
         

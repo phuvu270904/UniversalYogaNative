@@ -199,7 +199,6 @@ public class EditClassInstanceActivity extends AppCompatActivity {
         course.setDayOfWeek(cursor.getString(cursor.getColumnIndex("dayofweek")));
         course.setTime(cursor.getString(cursor.getColumnIndex("time")));
         course.setType(cursor.getString(cursor.getColumnIndex("type")));
-        course.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
         return course;
     }
 
@@ -392,6 +391,28 @@ public class EditClassInstanceActivity extends AppCompatActivity {
             return;
         }
         
+        // Validate that the selected date matches the course's day of the week
+        ClassInstance tempInstance = new ClassInstance();
+        tempInstance.setDate(selectedDate);
+        
+        if (!tempInstance.isDateMatchingDayOfWeek(course.getDayOfWeek())) {
+            String validationMessage = tempInstance.getDayOfWeekValidationMessage(course.getDayOfWeek());
+            new AlertDialog.Builder(this)
+                .setTitle("Date Validation Error")
+                .setMessage(validationMessage + "\n\nDo you want to continue anyway?")
+                .setPositiveButton("Continue", (dialog, which) -> {
+                    // User chose to continue despite the mismatch
+                    performUpdate(teacher, comments);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+            return;
+        }
+        
+        performUpdate(teacher, comments);
+    }
+    
+    private void performUpdate(String teacher, String comments) {
         try {
             int result = MainActivity.helper.updateClassInstance(
                 instanceId,

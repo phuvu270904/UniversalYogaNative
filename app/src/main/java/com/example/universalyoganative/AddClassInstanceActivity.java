@@ -194,18 +194,12 @@ public class AddClassInstanceActivity extends AppCompatActivity {
         course.setDayOfWeek(cursor.getString(cursor.getColumnIndex("dayofweek")));
         course.setTime(cursor.getString(cursor.getColumnIndex("time")));
         course.setType(cursor.getString(cursor.getColumnIndex("type")));
-        course.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
         return course;
     }
 
     private void populateCourseInfo() {
         tvCourseName.setText(course.getType());
         tvCourseSchedule.setText(course.getDayOfWeek() + " at " + course.getTime());
-        
-        // Pre-fill teacher field with course instructor if available
-        if (course.getInstructor() != null && !course.getInstructor().trim().isEmpty()) {
-            etTeacher.setText(course.getInstructor());
-        }
     }
 
     private void setCurrentDate() {
@@ -329,6 +323,28 @@ public class AddClassInstanceActivity extends AppCompatActivity {
             return;
         }
         
+        // Validate that the selected date matches the course's day of the week
+        ClassInstance tempInstance = new ClassInstance();
+        tempInstance.setDate(selectedDate);
+        
+        if (!tempInstance.isDateMatchingDayOfWeek(course.getDayOfWeek())) {
+            String validationMessage = tempInstance.getDayOfWeekValidationMessage(course.getDayOfWeek());
+            new AlertDialog.Builder(this)
+                .setTitle("Date Validation Error")
+                .setMessage(validationMessage + "\n\nDo you want to continue anyway?")
+                .setPositiveButton("Continue", (dialog, which) -> {
+                    // User chose to continue despite the mismatch
+                    createClassInstance(teacher, comments);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+            return;
+        }
+        
+        createClassInstance(teacher, comments);
+    }
+    
+    private void createClassInstance(String teacher, String comments) {
         try {
             long result = MainActivity.helper.createClassInstance(
                 courseId,

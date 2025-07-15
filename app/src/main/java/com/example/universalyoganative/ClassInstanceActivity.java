@@ -139,7 +139,6 @@ public class ClassInstanceActivity extends AppCompatActivity implements ClassIns
         course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
         course.setDifficulty(cursor.getString(cursor.getColumnIndex("difficulty")));
         course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
-        course.setInstructor(cursor.getString(cursor.getColumnIndex("instructor")));
         return course;
     }
 

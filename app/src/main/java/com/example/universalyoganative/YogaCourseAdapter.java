@@ -53,8 +53,8 @@ public class YogaCourseAdapter extends RecyclerView.Adapter<YogaCourseAdapter.Yo
     }
 
     class YogaCourseViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvType, tvPrice, tvDow, tvTime, tvDuration, tvCapacity;
-        private TextView tvInstructor, tvDifficulty, tvDescription;
+        private TextView tvType, tvPrice, tvDow, tvTime, tvDuration, tvCapacity, tvLocation;
+        private TextView tvDifficulty, tvDescription;
         private MaterialButton btnEdit, btnDelete, btnViewInstances;
 
         public YogaCourseViewHolder(@NonNull View itemView) {
@@ -67,7 +67,7 @@ public class YogaCourseAdapter extends RecyclerView.Adapter<YogaCourseAdapter.Yo
             tvTime = itemView.findViewById(R.id.tvTime);
             tvDuration = itemView.findViewById(R.id.tvDuration);
             tvCapacity = itemView.findViewById(R.id.tvCapacity);
-            tvInstructor = itemView.findViewById(R.id.tvInstructor);
+            tvLocation = itemView.findViewById(R.id.tvLocation);
             tvDifficulty = itemView.findViewById(R.id.tvDifficulty);
             tvDescription = itemView.findViewById(R.id.tvDescription);
             
@@ -108,7 +108,7 @@ public class YogaCourseAdapter extends RecyclerView.Adapter<YogaCourseAdapter.Yo
             tvTime.setText(course.getTime());
             tvDuration.setText(course.getFormattedDuration());
             tvCapacity.setText(course.getFormattedCapacity());
-            tvInstructor.setText(course.getInstructor() != null ? course.getInstructor() : "TBA");
+            tvLocation.setText(course.getLocation() != null ? course.getLocation() : "No location");
             tvDifficulty.setText(course.getDifficulty() != null ? course.getDifficulty() : "All Levels");
             
             // Handle description
