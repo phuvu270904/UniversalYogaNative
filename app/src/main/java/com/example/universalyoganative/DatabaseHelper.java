@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 6; // Incremented for removing instructor column
+    private static final int DATABASE_VERSION = 8; // Updated to match existing database version
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
@@ -134,16 +134,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older tables if existed
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKINGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
+        Log.d(this.getClass().getName(), "Upgrading database from version " + oldVersion + " to " + newVersion);
         
-        // Create tables again
-        onCreate(db);
-        
-        Log.d(this.getClass().getName(), "Database upgraded to version " + newVersion);
+        try {
+            // Handle migrations based on version changes
+            if (oldVersion < 7) {
+                // Migration to version 7 (if needed)
+                Log.d(this.getClass().getName(), "Migrating to version 7");
+            }
+            
+            if (oldVersion < 8) {
+                // Migration to version 8 (if needed)
+                Log.d(this.getClass().getName(), "Migrating to version 8");
+            }
+            
+            // For now, we'll use the simple approach of recreating tables
+            // In a production app, you'd want to preserve data during migrations
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKINGS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
+            
+            // Create tables again
+            onCreate(db);
+            
+            Log.d(this.getClass().getName(), "Database upgraded to version " + newVersion);
+        } catch (Exception e) {
+            Log.e(this.getClass().getName(), "Error during database upgrade", e);
+            // If upgrade fails, recreate the database
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKINGS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
+            onCreate(db);
+        }
     }
 
     // USER AUTHENTICATION METHODS
