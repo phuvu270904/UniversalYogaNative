@@ -182,7 +182,6 @@ public class CourseDetailActivity extends BaseActivity {
             course.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
             course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
             course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
-            course.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
             
             populateFields();
             cursor.close();
@@ -224,7 +223,6 @@ public class CourseDetailActivity extends BaseActivity {
                 instance.setPhotoPath(cursor.getString(cursor.getColumnIndex("photo_path")));
                 instance.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
                 instance.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
-                instance.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
                 
                 instanceList.add(instance);
             } while (cursor.moveToNext());

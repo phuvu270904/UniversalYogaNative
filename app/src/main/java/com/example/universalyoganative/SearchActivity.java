@@ -292,7 +292,6 @@ public class SearchActivity extends AppCompatActivity implements YogaCourseAdapt
         course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
         course.setDifficulty(cursor.getString(cursor.getColumnIndex("difficulty")));
         course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
-        course.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
         return course;
     }
 
@@ -307,7 +306,6 @@ public class SearchActivity extends AppCompatActivity implements YogaCourseAdapt
         instance.setPhotoPath(cursor.getString(cursor.getColumnIndex("photo_path")));
         instance.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
         instance.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
-        instance.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
         return instance;
     }
 

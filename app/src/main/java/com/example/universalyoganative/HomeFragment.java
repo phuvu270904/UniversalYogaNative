@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -119,7 +118,6 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
         course.setDescription(cursor.getString(cursor.getColumnIndex("description")));
         course.setDifficulty(cursor.getString(cursor.getColumnIndex("difficulty")));
         course.setLocation(cursor.getString(cursor.getColumnIndex("location")));
-        course.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
         return course;
     }
 
@@ -148,13 +146,12 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
     private void showResetDatabaseDialog() {
         new AlertDialog.Builder(getContext())
                 .setTitle("Reset Database")
-                .setMessage("This will reset the database and all sync statuses. Are you sure?")
+                .setMessage(R.string.confirm_reset_database)
                 .setPositiveButton("Reset", (dialog, which) -> {
                     helper.resetDatabase();
-                    helper.resetAllSyncStatuses(); // Also reset sync statuses
                     loadCourses();
                     updateStatistics();
-                    Toast.makeText(getContext(), "Database and sync statuses reset successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Database reset successfully", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -198,10 +195,6 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
     }
     
     private void startAutoSync() {
-        // Log sync status before sync
-        String syncStatusBefore = helper.getSyncStatusReport();
-        Log.d("HomeFragment", "Sync status before sync:\n" + syncStatusBefore);
-        
         // Show progress dialog
         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(getContext());
         progressDialog.setMessage("Syncing with cloud...");
@@ -227,11 +220,6 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         progressDialog.dismiss();
-                        
-                        // Log sync status after sync
-                        String syncStatusAfter = helper.getSyncStatusReport();
-                        Log.d("HomeFragment", "Sync status after sync:\n" + syncStatusAfter);
-                        
                         if (success) {
                             Toast.makeText(getContext(), "Sync completed successfully", Toast.LENGTH_SHORT).show();
                             // Refresh the data
@@ -254,14 +242,5 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
                 }
             }
         });
-    }
-
-    private void showSyncStatusDialog() {
-        String syncStatus = helper.getSyncStatusReport();
-        new AlertDialog.Builder(getContext())
-                .setTitle("Sync Status")
-                .setMessage(syncStatus)
-                .setPositiveButton("OK", null)
-                .show();
     }
 } 

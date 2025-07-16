@@ -86,49 +86,25 @@ public class FirebaseService {
     }
     
     private void performSyncToCloud(SyncCallback callback) {
-        // Get only unsynced data to sync
+        // Get all data to sync (courses, instances, users, bookings)
         android.database.Cursor unsyncedCourses = localDb.getUnsyncedCourses();
         android.database.Cursor unsyncedInstances = localDb.getUnsyncedInstances();
-        android.database.Cursor unsyncedUsers = localDb.getUnsyncedUsers();
-        List<Booking> unsyncedBookings = localDb.getUnsyncedBookings();
+        android.database.Cursor allUsers = localDb.getAllUsers();
+        List<Booking> allBookings = localDb.getAllBookings();
         
         int totalItems = (unsyncedCourses != null ? unsyncedCourses.getCount() : 0) + 
                         (unsyncedInstances != null ? unsyncedInstances.getCount() : 0) +
-                        (unsyncedUsers != null ? unsyncedUsers.getCount() : 0) +
-                        (unsyncedBookings != null ? unsyncedBookings.size() : 0);
-        
-        Log.d(TAG, "Starting sync to cloud - Total items: " + totalItems + 
-              " (Courses: " + (unsyncedCourses != null ? unsyncedCourses.getCount() : 0) + 
-              ", Instances: " + (unsyncedInstances != null ? unsyncedInstances.getCount() : 0) + 
-              ", Users: " + (unsyncedUsers != null ? unsyncedUsers.getCount() : 0) + 
-              ", Bookings: " + (unsyncedBookings != null ? unsyncedBookings.size() : 0) + ")");
+                        (allUsers != null ? allUsers.getCount() : 0) +
+                        (allBookings != null ? allBookings.size() : 0);
         
         if (totalItems == 0) {
-            Log.d(TAG, "No data to sync - all data is already synced");
-            callback.onSyncComplete(true, "No data to sync - all data is already synced");
+            callback.onSyncComplete(true, "No data to sync");
             return;
         }
         
         AtomicInteger completedItems = new AtomicInteger(0);
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger errorCount = new AtomicInteger(0);
-        
-        // Log the IDs of items being synced for debugging
-        if (unsyncedCourses != null && unsyncedCourses.moveToFirst()) {
-            do {
-                long courseId = unsyncedCourses.getLong(unsyncedCourses.getColumnIndex("_id"));
-                Log.d(TAG, "Will sync course with ID: " + courseId);
-            } while (unsyncedCourses.moveToNext());
-            unsyncedCourses.moveToFirst(); // Reset cursor position
-        }
-        
-        if (unsyncedInstances != null && unsyncedInstances.moveToFirst()) {
-            do {
-                long instanceId = unsyncedInstances.getLong(unsyncedInstances.getColumnIndex("_id"));
-                Log.d(TAG, "Will sync instance with ID: " + instanceId);
-            } while (unsyncedInstances.moveToNext());
-            unsyncedInstances.moveToFirst(); // Reset cursor position
-        }
         
         // Sync courses
         if (unsyncedCourses != null && unsyncedCourses.moveToFirst()) {
@@ -146,11 +122,9 @@ public class FirebaseService {
                         if (success) {
                             successCount.incrementAndGet();
                             // Mark as synced in local DB
-                            int updateResult = localDb.markCourseSynced(course.getId());
-                            Log.d(TAG, "Course sync complete - ID: " + course.getId() + ", Update result: " + updateResult);
+                            localDb.markCourseSynced(course.getId());
                         } else {
                             errorCount.incrementAndGet();
-                            Log.e(TAG, "Course sync failed - ID: " + course.getId() + ", Error: " + message);
                         }
                         
                         int progress = (completed * 100) / totalItems;
@@ -198,11 +172,9 @@ public class FirebaseService {
                         if (success) {
                             successCount.incrementAndGet();
                             // Mark as synced in local DB
-                            int updateResult = localDb.markInstanceSynced(instance.getId());
-                            Log.d(TAG, "Instance sync complete - ID: " + instance.getId() + ", Update result: " + updateResult);
+                            localDb.markInstanceSynced(instance.getId());
                         } else {
                             errorCount.incrementAndGet();
-                            Log.e(TAG, "Instance sync failed - ID: " + instance.getId() + ", Error: " + message);
                         }
                         
                         int progress = (completed * 100) / totalItems;
@@ -235,9 +207,11 @@ public class FirebaseService {
         }
         
         // Sync users
-        if (unsyncedUsers != null && unsyncedUsers.moveToFirst()) {
+        System.out.println("allUsers: " + allUsers.getCount());
+        System.out.println("isMoveToFirst: " + allUsers.moveToFirst());
+        if (allUsers != null && allUsers.moveToFirst()) {
             do {
-                User user = createUserFromCursor(unsyncedUsers);
+                User user = createUserFromCursor(allUsers);
                 uploadUserToFirestore(user, new SyncCallback() {
                     @Override
                     public void onSyncProgress(String message, int progress) {
@@ -249,8 +223,6 @@ public class FirebaseService {
                         int completed = completedItems.incrementAndGet();
                         if (success) {
                             successCount.incrementAndGet();
-                            // Mark as synced in local DB
-                            localDb.markUserSynced(user.getId());
                         } else {
                             errorCount.incrementAndGet();
                         }
@@ -280,13 +252,13 @@ public class FirebaseService {
                         }
                     }
                 });
-            } while (unsyncedUsers.moveToNext());
-            unsyncedUsers.close();
+            } while (allUsers.moveToNext());
+            allUsers.close();
         }
         
         // Sync bookings
-        if (unsyncedBookings != null && !unsyncedBookings.isEmpty()) {
-            for (Booking booking : unsyncedBookings) {
+        if (allBookings != null && !allBookings.isEmpty()) {
+            for (Booking booking : allBookings) {
                 uploadBookingToFirestore(booking, new SyncCallback() {
                     @Override
                     public void onSyncProgress(String message, int progress) {
@@ -298,8 +270,6 @@ public class FirebaseService {
                         int completed = completedItems.incrementAndGet();
                         if (success) {
                             successCount.incrementAndGet();
-                            // Mark as synced in local DB
-                            localDb.markBookingSynced(booking.getBookingId());
                         } else {
                             errorCount.incrementAndGet();
                         }
@@ -624,41 +594,12 @@ public class FirebaseService {
         courseData.put("localId", course.getId());
         courseData.put("lastModified", System.currentTimeMillis());
         
-        Log.d(TAG, "Uploading course to Firestore - ID: " + course.getId() + ", Type: " + course.getType());
-        
-        // First check if a document with this localId already exists
-        db.collection(COLLECTION_COURSES)
-                .whereEqualTo("localId", course.getId())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // Document already exists, update it
-                        DocumentSnapshot existingDoc = queryDocumentSnapshots.getDocuments().get(0);
-                        existingDoc.getReference().update(courseData)
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d(TAG, "Course updated successfully - ID: " + course.getId() + ", Firestore ID: " + existingDoc.getId());
-                                    callback.onSyncComplete(true, "Course updated successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to update course - ID: " + course.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to update course: " + e.getMessage());
-                                });
-                    } else {
-                        // Document doesn't exist, create new one
-                        db.collection(COLLECTION_COURSES).add(courseData)
-                                .addOnSuccessListener(documentReference -> {
-                                    Log.d(TAG, "Course uploaded successfully - ID: " + course.getId() + ", Firestore ID: " + documentReference.getId());
-                                    callback.onSyncComplete(true, "Course uploaded successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to upload course - ID: " + course.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to upload course: " + e.getMessage());
-                                });
-                    }
+        db.collection(COLLECTION_COURSES).add(courseData)
+                .addOnSuccessListener(documentReference -> {
+                    callback.onSyncComplete(true, "Course uploaded successfully");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to check existing course - ID: " + course.getId() + ", Error: " + e.getMessage());
-                    callback.onSyncError("Failed to check existing course: " + e.getMessage());
+                    callback.onSyncError("Failed to upload course: " + e.getMessage());
                 });
     }
     
@@ -674,41 +615,12 @@ public class FirebaseService {
         instanceData.put("localId", instance.getId());
         instanceData.put("lastModified", System.currentTimeMillis());
         
-        Log.d(TAG, "Uploading instance to Firestore - ID: " + instance.getId() + ", Date: " + instance.getDate());
-        
-        // First check if a document with this localId already exists
-        db.collection(COLLECTION_INSTANCES)
-                .whereEqualTo("localId", instance.getId())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // Document already exists, update it
-                        DocumentSnapshot existingDoc = queryDocumentSnapshots.getDocuments().get(0);
-                        existingDoc.getReference().update(instanceData)
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d(TAG, "Instance updated successfully - ID: " + instance.getId() + ", Firestore ID: " + existingDoc.getId());
-                                    callback.onSyncComplete(true, "Instance updated successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to update instance - ID: " + instance.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to update instance: " + e.getMessage());
-                                });
-                    } else {
-                        // Document doesn't exist, create new one
-                        db.collection(COLLECTION_INSTANCES).add(instanceData)
-                                .addOnSuccessListener(documentReference -> {
-                                    Log.d(TAG, "Instance uploaded successfully - ID: " + instance.getId() + ", Firestore ID: " + documentReference.getId());
-                                    callback.onSyncComplete(true, "Instance uploaded successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to upload instance - ID: " + instance.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to upload instance: " + e.getMessage());
-                                });
-                    }
+        db.collection(COLLECTION_INSTANCES).add(instanceData)
+                .addOnSuccessListener(documentReference -> {
+                    callback.onSyncComplete(true, "Instance uploaded successfully");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to check existing instance - ID: " + instance.getId() + ", Error: " + e.getMessage());
-                    callback.onSyncError("Failed to check existing instance: " + e.getMessage());
+                    callback.onSyncError("Failed to upload instance: " + e.getMessage());
                 });
     }
     
@@ -722,39 +634,12 @@ public class FirebaseService {
         userData.put("localId", user.getId());
         userData.put("lastModified", System.currentTimeMillis());
         
-        // First check if a document with this localId already exists
-        db.collection(COLLECTION_USERS)
-                .whereEqualTo("localId", user.getId())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // Document already exists, update it
-                        DocumentSnapshot existingDoc = queryDocumentSnapshots.getDocuments().get(0);
-                        existingDoc.getReference().update(userData)
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d(TAG, "User updated successfully - ID: " + user.getId() + ", Firestore ID: " + existingDoc.getId());
-                                    callback.onSyncComplete(true, "User updated successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to update user - ID: " + user.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to update user: " + e.getMessage());
-                                });
-                    } else {
-                        // Document doesn't exist, create new one
-                        db.collection(COLLECTION_USERS).add(userData)
-                                .addOnSuccessListener(documentReference -> {
-                                    Log.d(TAG, "User uploaded successfully - ID: " + user.getId() + ", Firestore ID: " + documentReference.getId());
-                                    callback.onSyncComplete(true, "User uploaded successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to upload user - ID: " + user.getId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to upload user: " + e.getMessage());
-                                });
-                    }
+        db.collection(COLLECTION_USERS).add(userData)
+                .addOnSuccessListener(documentReference -> {
+                    callback.onSyncComplete(true, "User uploaded successfully");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to check existing user - ID: " + user.getId() + ", Error: " + e.getMessage());
-                    callback.onSyncError("Failed to check existing user: " + e.getMessage());
+                    callback.onSyncError("Failed to upload user: " + e.getMessage());
                 });
     }
     
@@ -765,39 +650,12 @@ public class FirebaseService {
         bookingData.put("localId", booking.getBookingId());
         bookingData.put("lastModified", System.currentTimeMillis());
         
-        // First check if a document with this localId already exists
-        db.collection("bookings")
-                .whereEqualTo("localId", booking.getBookingId())
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        // Document already exists, update it
-                        DocumentSnapshot existingDoc = queryDocumentSnapshots.getDocuments().get(0);
-                        existingDoc.getReference().update(bookingData)
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d(TAG, "Booking updated successfully - ID: " + booking.getBookingId() + ", Firestore ID: " + existingDoc.getId());
-                                    callback.onSyncComplete(true, "Booking updated successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to update booking - ID: " + booking.getBookingId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to update booking: " + e.getMessage());
-                                });
-                    } else {
-                        // Document doesn't exist, create new one
-                        db.collection("bookings").add(bookingData)
-                                .addOnSuccessListener(documentReference -> {
-                                    Log.d(TAG, "Booking uploaded successfully - ID: " + booking.getBookingId() + ", Firestore ID: " + documentReference.getId());
-                                    callback.onSyncComplete(true, "Booking uploaded successfully");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to upload booking - ID: " + booking.getBookingId() + ", Error: " + e.getMessage());
-                                    callback.onSyncError("Failed to upload booking: " + e.getMessage());
-                                });
-                    }
+        db.collection("bookings").add(bookingData)
+                .addOnSuccessListener(documentReference -> {
+                    callback.onSyncComplete(true, "Booking uploaded successfully");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to check existing booking - ID: " + booking.getBookingId() + ", Error: " + e.getMessage());
-                    callback.onSyncError("Failed to check existing booking: " + e.getMessage());
+                    callback.onSyncError("Failed to upload booking: " + e.getMessage());
                 });
     }
     
@@ -990,7 +848,6 @@ public class FirebaseService {
         user.setPassword(cursor.getString(cursor.getColumnIndex("password")));
         user.setRole(cursor.getString(cursor.getColumnIndex("role")));
         user.setCreatedDate(cursor.getString(cursor.getColumnIndex("created_date")));
-        user.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
         return user;
     }
 } 
