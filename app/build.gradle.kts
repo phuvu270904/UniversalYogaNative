@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.android.application")
     id("com.google.gms.google-services")
 }
 
@@ -46,8 +47,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
 
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-auth")
     
     // RecyclerView for better list performance
     implementation("androidx.recyclerview:recyclerview:1.3.2")

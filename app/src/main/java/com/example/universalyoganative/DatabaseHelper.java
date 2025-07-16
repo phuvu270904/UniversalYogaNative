@@ -494,49 +494,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                               new String[]{String.valueOf(instanceId)});
     }
 
-    /**
-     * Mark all courses as unsynced (useful for testing or after sync issues)
-     */
-    public int markAllCoursesUnsynced() {
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SYNC_STATUS, 0);
-        return database.update(TABLE_YOGA_COURSE, values, null, null);
-    }
-
-    /**
-     * Mark all instances as unsynced (useful for testing or after sync issues)
-     */
-    public int markAllInstancesUnsynced() {
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SYNC_STATUS, 0);
-        return database.update(TABLE_CLASS_INSTANCE, values, null, null);
-    }
-
-    /**
-     * Get sync statistics
-     */
-    public int getSyncedCoursesCount() {
-        Cursor cursor = database.query(TABLE_YOGA_COURSE, new String[]{"COUNT(*)"}, 
-                                     COLUMN_SYNC_STATUS + " = 1", null, null, null, null);
-        int count = 0;
-        if (cursor != null && cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-            cursor.close();
-        }
-        return count;
-    }
-
-    public int getSyncedInstancesCount() {
-        Cursor cursor = database.query(TABLE_CLASS_INSTANCE, new String[]{"COUNT(*)"}, 
-                                     COLUMN_SYNC_STATUS + " = 1", null, null, null, null);
-        int count = 0;
-        if (cursor != null && cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-            cursor.close();
-        }
-        return count;
-    }
-
     public void resetDatabase() {
         database.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
         database.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
@@ -701,7 +658,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllUsers() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(
-            "user",
+            "users",
             null,
             null,
             null,

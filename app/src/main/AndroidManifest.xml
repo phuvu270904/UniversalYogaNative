@@ -91,7 +91,9 @@
             android:name=".SearchActivity"
             android:exported="false" />
             
-
+        <activity
+            android:name=".SyncActivity"
+            android:exported="false" />
             
         <activity
             android:name=".ConfirmCourseActivity"
