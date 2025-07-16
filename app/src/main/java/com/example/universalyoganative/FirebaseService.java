@@ -819,37 +819,20 @@ public class FirebaseService {
             if (dayOfWeek != null && time != null && capacity != null && duration != null && 
                 price != null && type != null) {
                 
-                // Check if course already exists locally by checking if we have a localId
-                // and if that localId exists in our database
+                // Check if course already exists locally
                 if (localId != null && localId > 0) {
-                    // Check if this course exists in our local database
-                    YogaCourse existingCourse = localDb.getYogaCourseById(localId);
-                    if (existingCourse != null) {
-                        // Update existing course
-                        localDb.updateYogaCourse(localId, dayOfWeek, time, capacity.intValue(), 
-                                               duration.intValue(), price.floatValue(), type, 
-                                               description, difficulty, location);
-                        Log.d(TAG, "Updated existing course - ID: " + localId);
-                    } else {
-                        // This localId doesn't exist in our database, create new course
-                        long newId = localDb.createNewYogaCourse(dayOfWeek, time, capacity.intValue(), 
-                                                               duration.intValue(), price.floatValue(), 
-                                                               type, description, difficulty, location);
-                        if (newId > 0) {
-                            // Mark as synced
-                            localDb.markCourseSynced(newId);
-                            Log.d(TAG, "Created new course from cloud - ID: " + newId + ", Original localId: " + localId);
-                        }
-                    }
+                    // Update existing course
+                    localDb.updateYogaCourse(localId, dayOfWeek, time, capacity.intValue(), 
+                                           duration.intValue(), price.floatValue(), type, 
+                                           description, difficulty, location);
                 } else {
-                    // No localId, create new course
+                    // Create new course
                     long newId = localDb.createNewYogaCourse(dayOfWeek, time, capacity.intValue(), 
                                                            duration.intValue(), price.floatValue(), 
                                                            type, description, difficulty, location);
                     if (newId > 0) {
                         // Mark as synced
                         localDb.markCourseSynced(newId);
-                        Log.d(TAG, "Created new course from cloud - ID: " + newId);
                     }
                 }
                 callback.onSyncComplete(true, "Course downloaded successfully");
@@ -875,34 +858,18 @@ public class FirebaseService {
             if (courseId != null && date != null && teacher != null) {
                 // Check if instance already exists locally
                 if (localId != null && localId > 0) {
-                    // Check if this instance exists in our local database
-                    ClassInstance existingInstance = localDb.getClassInstanceById(localId);
-                    if (existingInstance != null) {
-                        // Update existing instance
-                        localDb.updateClassInstance(localId, date, teacher, comments, 
-                                                  photoPath, latitude != null ? latitude : 0.0, 
-                                                  longitude != null ? longitude : 0.0);
-                        Log.d(TAG, "Updated existing instance - ID: " + localId);
-                    } else {
-                        // This localId doesn't exist in our database, create new instance
-                        long newId = localDb.createClassInstance(courseId, date, teacher, comments, 
-                                                               photoPath, latitude != null ? latitude : 0.0, 
-                                                               longitude != null ? longitude : 0.0);
-                        if (newId > 0) {
-                            // Mark as synced
-                            localDb.markInstanceSynced(newId);
-                            Log.d(TAG, "Created new instance from cloud - ID: " + newId + ", Original localId: " + localId);
-                        }
-                    }
+                    // Update existing instance
+                    localDb.updateClassInstance(localId, date, teacher, comments, 
+                                              photoPath, latitude != null ? latitude : 0.0, 
+                                              longitude != null ? longitude : 0.0);
                 } else {
-                    // No localId, create new instance
+                    // Create new instance
                     long newId = localDb.createClassInstance(courseId, date, teacher, comments, 
                                                            photoPath, latitude != null ? latitude : 0.0, 
                                                            longitude != null ? longitude : 0.0);
                     if (newId > 0) {
                         // Mark as synced
                         localDb.markInstanceSynced(newId);
-                        Log.d(TAG, "Created new instance from cloud - ID: " + newId);
                     }
                 }
                 callback.onSyncComplete(true, "Instance downloaded successfully");
@@ -924,21 +891,22 @@ public class FirebaseService {
             Long localId = document.getLong("localId");
             
             if (name != null && email != null && password != null && role != null) {
-                // Check if user already exists locally by email (more reliable than localId)
-                User existingUser = localDb.getUserByEmail(email);
-                if (existingUser != null) {
+                // Check if user already exists locally
+                if (localId != null && localId > 0) {
                     // Update existing user
-                    localDb.updateUser(existingUser.getId(), name, email, role);
-                    Log.d(TAG, "Updated existing user - Email: " + email);
+                    localDb.updateUser(localId, name, email, role);
+                    // Note: We don't update password for security reasons
                 } else {
                     // Create new user
                     long newId = localDb.registerUser(name, email, password, role);
                     if (newId > 0) {
-                        // Mark as synced
-                        localDb.markUserSynced(newId);
-                        Log.d(TAG, "Created new user from cloud - ID: " + newId + ", Email: " + email);
-                    } else {
-                        Log.e(TAG, "Failed to create user from cloud - Email: " + email);
+                        // User created successfully
+                    } else if (newId == -1) {
+                        // Email already exists, try to update
+                        User existingUser = localDb.getUserByEmail(email);
+                        if (existingUser != null) {
+                            localDb.updateUser(existingUser.getId(), name, email, role);
+                        }
                     }
                 }
                 callback.onSyncComplete(true, "User downloaded successfully");
@@ -957,34 +925,15 @@ public class FirebaseService {
             Long localId = document.getLong("localId");
             
             if (classId != null && userId != null) {
-                // Check if booking already exists locally by checking if we have a localId
-                // and if that localId exists in our database
+                // Check if booking already exists locally
                 if (localId != null && localId > 0) {
-                    // Check if this booking exists in our local database
-                    Booking existingBooking = localDb.getBookingById(localId);
-                    if (existingBooking != null) {
-                        // Booking already exists, skip
-                        Log.d(TAG, "Booking already exists locally - ID: " + localId);
-                        callback.onSyncComplete(true, "Booking already exists locally");
-                    } else {
-                        // This localId doesn't exist in our database, create new booking
-                        long newId = localDb.createBooking(classId.intValue(), userId);
-                        if (newId > 0) {
-                            // Mark as synced
-                            localDb.markBookingSynced(newId);
-                            Log.d(TAG, "Created new booking from cloud - ID: " + newId + ", Original localId: " + localId);
-                            callback.onSyncComplete(true, "Booking downloaded successfully");
-                        } else {
-                            callback.onSyncError("Failed to create booking locally");
-                        }
-                    }
+                    // Booking already exists, skip
+                    callback.onSyncComplete(true, "Booking already exists locally");
                 } else {
-                    // No localId, create new booking
+                    // Create new booking
                     long newId = localDb.createBooking(classId.intValue(), userId);
                     if (newId > 0) {
-                        // Mark as synced
-                        localDb.markBookingSynced(newId);
-                        Log.d(TAG, "Created new booking from cloud - ID: " + newId);
+                        // Booking created successfully
                         callback.onSyncComplete(true, "Booking downloaded successfully");
                     } else {
                         callback.onSyncError("Failed to create booking locally");

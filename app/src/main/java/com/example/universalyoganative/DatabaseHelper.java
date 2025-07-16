@@ -809,7 +809,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Booking booking = new Booking(
                     cursor.getInt(0),    // booking_id
                     cursor.getInt(1),    // class_id
-                    cursor.getLong(2),   // user_id
+                    cursor.getInt(2),    // user_id
                     cursor.getString(3), // user_email
                     cursor.getString(4), // class_date
                     cursor.getString(5), // course_time
@@ -895,7 +895,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Booking booking = new Booking(
                     cursor.getInt(0),    // booking_id
                     cursor.getInt(1),    // class_id
-                    cursor.getLong(2),   // user_id
+                    cursor.getInt(2),    // user_id
                     cursor.getString(3), // user_email
                     cursor.getString(4), // class_date
                     cursor.getString(5), // course_time
@@ -1047,71 +1047,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
               .append(", Unsynced: ").append(unsyncedBookingsCount);
         
         return report.toString();
-    }
-
-    /**
-     * Get yoga course by ID
-     */
-    public YogaCourse getYogaCourseById(long courseId) {
-        Cursor cursor = database.query(TABLE_YOGA_COURSE, null, COLUMN_ID + "=?", 
-                                     new String[]{String.valueOf(courseId)}, null, null, null);
-        YogaCourse course = null;
-        if (cursor != null && cursor.moveToFirst()) {
-            course = new YogaCourse();
-            course.setId(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)));
-            course.setDayOfWeek(cursor.getString(cursor.getColumnIndex(COLUMN_DAY_OF_WEEK)));
-            course.setTime(cursor.getString(cursor.getColumnIndex(COLUMN_TIME)));
-            course.setCapacity(cursor.getInt(cursor.getColumnIndex(COLUMN_CAPACITY)));
-            course.setDuration(cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)));
-            course.setPrice(cursor.getFloat(cursor.getColumnIndex(COLUMN_PRICE)));
-            course.setType(cursor.getString(cursor.getColumnIndex(COLUMN_TYPE)));
-            course.setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
-            course.setDifficulty(cursor.getString(cursor.getColumnIndex(COLUMN_DIFFICULTY)));
-            course.setLocation(cursor.getString(cursor.getColumnIndex(COLUMN_LOCATION)));
-            course.setCreatedDate(cursor.getString(cursor.getColumnIndex(COLUMN_CREATED_DATE)));
-            course.setSyncStatus(cursor.getInt(cursor.getColumnIndex(COLUMN_SYNC_STATUS)));
-            cursor.close();
-        }
-        return course;
-    }
-
-    /**
-     * Get class instance by ID
-     */
-    public ClassInstance getClassInstanceById(long instanceId) {
-        Cursor cursor = database.query(TABLE_CLASS_INSTANCE, null, COLUMN_INSTANCE_ID + "=?", 
-                                     new String[]{String.valueOf(instanceId)}, null, null, null);
-        ClassInstance instance = null;
-        if (cursor != null && cursor.moveToFirst()) {
-            instance = new ClassInstance();
-            instance.setId(cursor.getLong(cursor.getColumnIndex(COLUMN_INSTANCE_ID)));
-            instance.setCourseId(cursor.getLong(cursor.getColumnIndex(COLUMN_COURSE_ID)));
-            instance.setDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)));
-            instance.setTeacher(cursor.getString(cursor.getColumnIndex(COLUMN_TEACHER)));
-            instance.setComments(cursor.getString(cursor.getColumnIndex(COLUMN_COMMENTS)));
-            instance.setPhotoPath(cursor.getString(cursor.getColumnIndex(COLUMN_PHOTO_PATH)));
-            instance.setLatitude(cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)));
-            instance.setLongitude(cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE)));
-            instance.setSyncStatus(cursor.getInt(cursor.getColumnIndex(COLUMN_SYNC_STATUS)));
-            cursor.close();
-        }
-        return instance;
-    }
-
-    /**
-     * Get booking by ID
-     */
-    public Booking getBookingById(long bookingId) {
-        Cursor cursor = database.query(TABLE_BOOKINGS, null, COLUMN_BOOKING_ID + "=?", 
-                                     new String[]{String.valueOf(bookingId)}, null, null, null);
-        Booking booking = null;
-        if (cursor != null && cursor.moveToFirst()) {
-            booking = new Booking();
-            booking.setBookingId(cursor.getInt(cursor.getColumnIndex(COLUMN_BOOKING_ID)));
-            booking.setClassId(cursor.getInt(cursor.getColumnIndex(COLUMN_BOOKING_CLASS_ID)));
-            booking.setUserId(cursor.getLong(cursor.getColumnIndex(COLUMN_BOOKING_USER_ID)));
-            cursor.close();
-        }
-        return booking;
     }
 }
