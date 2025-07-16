@@ -81,8 +81,8 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
 
         MaterialButton btnSync = view.findViewById(R.id.btnSync);
         btnSync.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), SyncActivity.class);
-            startActivity(intent);
+            // Auto-trigger full sync
+            startAutoSync();
         });
 
         MaterialButton btnResetDb = view.findViewById(R.id.btnResetDb);
@@ -192,5 +192,55 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
         Intent intent = new Intent(getActivity(), CourseDetailActivity.class);
         intent.putExtra("course_id", course.getId());
         startActivity(intent);
+    }
+    
+    private void startAutoSync() {
+        // Show progress dialog
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(getContext());
+        progressDialog.setMessage("Syncing with cloud...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        
+        // Initialize Firebase service
+        FirebaseService firebaseService = new FirebaseService(helper);
+        
+        // Start full sync
+        firebaseService.fullSync(new FirebaseService.SyncCallback() {
+            @Override
+            public void onSyncProgress(String message, int progress) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.setMessage(message);
+                    });
+                }
+            }
+            
+            @Override
+            public void onSyncComplete(boolean success, String message) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        if (success) {
+                            Toast.makeText(getContext(), "Sync completed successfully", Toast.LENGTH_SHORT).show();
+                            // Refresh the data
+                            loadCourses();
+                            updateStatistics();
+                        } else {
+                            Toast.makeText(getContext(), "Sync failed: " + message, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+            
+            @Override
+            public void onSyncError(String error) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Sync error: " + error, Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+        });
     }
 } 

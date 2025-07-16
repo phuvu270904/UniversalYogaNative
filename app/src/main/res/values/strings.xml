@@ -60,6 +60,21 @@
     <string name="sync_failed">Sync failed. Please try again.</string>
     <string name="no_network">No network connection available</string>
     <string name="sync_in_progress">Syncing...</string>
+    <string name="sync_to_cloud">Sync to Cloud</string>
+    <string name="sync_from_cloud">Sync from Cloud</string>
+    <string name="full_sync">Full Sync (Bidirectional)</string>
+    <string name="check_connection">Check Connection</string>
+    <string name="sync_statistics">Sync Statistics</string>
+    <string name="sync_actions">Sync Actions</string>
+    <string name="sync_log">Sync Log</string>
+    <string name="local_courses">Local Courses:</string>
+    <string name="local_instances">Local Instances:</string>
+    <string name="unsynced_courses">Unsynced Courses:</string>
+    <string name="unsynced_instances">Unsynced Instances:</string>
+    <string name="ready_to_sync">Ready to sync</string>
+    <string name="sync_completed">Sync completed successfully</string>
+    <string name="sync_failed_error">Sync failed</string>
+    <string name="wait_for_sync">Please wait for sync to complete</string>
     
     <!-- Validation Messages -->
     <string name="error_required_field">This field is required</string>
