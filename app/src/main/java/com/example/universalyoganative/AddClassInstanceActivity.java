@@ -194,6 +194,7 @@ public class AddClassInstanceActivity extends AppCompatActivity {
         course.setDayOfWeek(cursor.getString(cursor.getColumnIndex("dayofweek")));
         course.setTime(cursor.getString(cursor.getColumnIndex("time")));
         course.setType(cursor.getString(cursor.getColumnIndex("type")));
+        course.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
         return course;
     }
 

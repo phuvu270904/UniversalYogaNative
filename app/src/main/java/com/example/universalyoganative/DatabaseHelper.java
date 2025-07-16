@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 6; // Incremented for removing instructor column
+    private static final int DATABASE_VERSION = 8; // Incremented for adding sync_status to User and Bookings tables
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
@@ -58,11 +58,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_USER_PASSWORD = "password";
     public static final String COLUMN_USER_ROLE = "role";
     public static final String COLUMN_USER_CREATED_DATE = "created_date";
+    public static final String COLUMN_USER_SYNC_STATUS = "sync_status";
 
     // Booking related columns
     private static final String COLUMN_BOOKING_ID = "_id";
     private static final String COLUMN_BOOKING_CLASS_ID = "class_id";
     private static final String COLUMN_BOOKING_USER_ID = "user_id";
+    private static final String COLUMN_BOOKING_SYNC_STATUS = "sync_status";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -96,7 +98,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COLUMN_USER_EMAIL + " TEXT UNIQUE,"
                     + COLUMN_USER_PASSWORD + " TEXT,"
                     + COLUMN_USER_ROLE + " TEXT,"
-                    + COLUMN_USER_CREATED_DATE + " TEXT"
+                    + COLUMN_USER_CREATED_DATE + " TEXT,"
+                    + COLUMN_USER_SYNC_STATUS + " INTEGER DEFAULT 0"
                     + ")";
             db.execSQL(CREATE_TABLE_USER);
 
@@ -121,6 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COLUMN_BOOKING_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_BOOKING_CLASS_ID + " INTEGER,"
                     + COLUMN_BOOKING_USER_ID + " INTEGER,"
+                    + COLUMN_BOOKING_SYNC_STATUS + " INTEGER DEFAULT 0,"
                     + "FOREIGN KEY(" + COLUMN_BOOKING_CLASS_ID + ") REFERENCES " + TABLE_CLASS_INSTANCE + "(" + COLUMN_INSTANCE_ID + "),"
                     + "FOREIGN KEY(" + COLUMN_BOOKING_USER_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")"
                     + ")";
@@ -134,14 +138,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older tables if existed
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKINGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLASS_INSTANCE);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_YOGA_COURSE);
-        
-        // Create tables again
-        onCreate(db);
+        if (oldVersion < 7) {
+            // Add sync_status column to User table if it doesn't exist
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_USER + " ADD COLUMN " + COLUMN_USER_SYNC_STATUS + " INTEGER DEFAULT 0");
+                // Update existing records to have sync_status = 0
+                db.execSQL("UPDATE " + TABLE_USER + " SET " + COLUMN_USER_SYNC_STATUS + " = 0 WHERE " + COLUMN_USER_SYNC_STATUS + " IS NULL");
+            } catch (Exception e) {
+                Log.d("DatabaseHelper", "sync_status column already exists in User table");
+            }
+            
+            // Add sync_status column to Bookings table if it doesn't exist
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_BOOKINGS + " ADD COLUMN " + COLUMN_BOOKING_SYNC_STATUS + " INTEGER DEFAULT 0");
+                // Update existing records to have sync_status = 0
+                db.execSQL("UPDATE " + TABLE_BOOKINGS + " SET " + COLUMN_BOOKING_SYNC_STATUS + " = 0 WHERE " + COLUMN_BOOKING_SYNC_STATUS + " IS NULL");
+            } catch (Exception e) {
+                Log.d("DatabaseHelper", "sync_status column already exists in Bookings table");
+            }
+            
+            // Ensure existing courses and instances have sync_status = 0
+            try {
+                db.execSQL("UPDATE " + TABLE_YOGA_COURSE + " SET " + COLUMN_SYNC_STATUS + " = 0 WHERE " + COLUMN_SYNC_STATUS + " IS NULL");
+            } catch (Exception e) {
+                Log.d("DatabaseHelper", "Error updating existing courses sync status");
+            }
+            
+            try {
+                db.execSQL("UPDATE " + TABLE_CLASS_INSTANCE + " SET " + COLUMN_SYNC_STATUS + " = 0 WHERE " + COLUMN_SYNC_STATUS + " IS NULL");
+            } catch (Exception e) {
+                Log.d("DatabaseHelper", "Error updating existing instances sync status");
+            }
+        }
         
         Log.d(this.getClass().getName(), "Database upgraded to version " + newVersion);
     }
@@ -185,6 +213,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_USER_PASSWORD, hashPassword(password));
         values.put(COLUMN_USER_ROLE, role);
         values.put(COLUMN_USER_CREATED_DATE, String.valueOf(System.currentTimeMillis()));
+        values.put(COLUMN_USER_SYNC_STATUS, 0);
         
         return database.insertOrThrow(TABLE_USER, null, values);
     }
@@ -314,6 +343,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_PASSWORD)));
         user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_ROLE)));
         user.setCreatedDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_CREATED_DATE)));
+        user.setSyncStatus(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_SYNC_STATUS)));
         return user;
     }
 
@@ -483,15 +513,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int markCourseSynced(long courseId) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_SYNC_STATUS, 1);
-        return database.update(TABLE_YOGA_COURSE, values, COLUMN_ID + "=?", 
+        int result = database.update(TABLE_YOGA_COURSE, values, COLUMN_ID + "=?", 
                               new String[]{String.valueOf(courseId)});
+        Log.d("DatabaseHelper", "markCourseSynced - Course ID: " + courseId + ", Update result: " + result);
+        return result;
     }
 
     public int markInstanceSynced(long instanceId) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_SYNC_STATUS, 1);
-        return database.update(TABLE_CLASS_INSTANCE, values, COLUMN_INSTANCE_ID + "=?", 
+        int result = database.update(TABLE_CLASS_INSTANCE, values, COLUMN_INSTANCE_ID + "=?", 
                               new String[]{String.valueOf(instanceId)});
+        Log.d("DatabaseHelper", "markInstanceSynced - Instance ID: " + instanceId + ", Update result: " + result);
+        return result;
     }
 
     /**
@@ -699,33 +733,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllUsers() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(
-            "user",
-            null,
-            null,
-            null,
-            null,
-            null,
-            "name ASC"
-        );
+        return database.query(TABLE_USER, null, null, null, null, null, COLUMN_USER_NAME + " ASC");
     }
 
     public boolean updateUser(User user) {
-        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("name", user.getName());
-        values.put("email", user.getEmail());
-        return db.update("users", values, "_id = ?", new String[]{String.valueOf(user.getId())}) > 0;
+        values.put(COLUMN_USER_NAME, user.getName());
+        values.put(COLUMN_USER_EMAIL, user.getEmail());
+        return database.update(TABLE_USER, values, COLUMN_USER_ID + " = ?", new String[]{String.valueOf(user.getId())}) > 0;
     }
 
     // Booking related methods
     public long createBooking(int classId, long userId) {
-        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_BOOKING_CLASS_ID, classId);
         values.put(COLUMN_BOOKING_USER_ID, userId);
-        return db.insert(TABLE_BOOKINGS, null, values);
+        values.put(COLUMN_BOOKING_SYNC_STATUS, 0);
+        return database.insert(TABLE_BOOKINGS, null, values);
     }
 
     public List<Booking> getAllBookings() {
@@ -742,8 +766,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " JOIN " + TABLE_YOGA_COURSE + " yc ON ci." + COLUMN_COURSE_ID + " = yc." + COLUMN_ID
                 + " ORDER BY ci." + COLUMN_DATE + " ASC";
 
-        SQLiteDatabase dbReadable = this.getReadableDatabase();
-        Cursor cursor = dbReadable.rawQuery(query, null);
+        Cursor cursor = database.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -779,8 +802,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " WHERE b." + COLUMN_BOOKING_USER_ID + " = ?"
                 + " ORDER BY ci." + COLUMN_DATE + " ASC";
 
-        SQLiteDatabase dbReadable = this.getReadableDatabase();
-        Cursor cursor = dbReadable.rawQuery(query, new String[]{String.valueOf(userId)});
+        Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(userId)});
 
         if (cursor.moveToFirst()) {
             do {
@@ -802,8 +824,228 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean deleteBooking(int bookingId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(TABLE_BOOKINGS, COLUMN_BOOKING_ID + " = ?",
+        return database.delete(TABLE_BOOKINGS, COLUMN_BOOKING_ID + " = ?",
                 new String[]{String.valueOf(bookingId)}) > 0;
+    }
+
+    public int markAllUsersUnsynced() {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_SYNC_STATUS, 0);
+        return database.update(TABLE_USER, values, null, null);
+    }
+
+    public int markAllBookingsUnsynced() {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BOOKING_SYNC_STATUS, 0);
+        return database.update(TABLE_BOOKINGS, values, null, null);
+    }
+
+    public int getUnsyncedUsersCount() {
+        Cursor cursor = database.query(TABLE_USER, new String[]{"COUNT(*)"}, 
+                                     COLUMN_USER_SYNC_STATUS + " = 0", null, null, null, null);
+        int count = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+            cursor.close();
+        }
+        return count;
+    }
+
+    public int getUnsyncedBookingsCount() {
+        Cursor cursor = database.query(TABLE_BOOKINGS, new String[]{"COUNT(*)"}, 
+                                     COLUMN_BOOKING_SYNC_STATUS + " = 0", null, null, null, null);
+        int count = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+            cursor.close();
+        }
+        return count;
+    }
+
+    /**
+     * Get all unsynced users
+     */
+    public Cursor getUnsyncedUsers() {
+        return database.query(TABLE_USER, null, COLUMN_USER_SYNC_STATUS + " = 0", 
+                             null, null, null, COLUMN_USER_CREATED_DATE + " DESC");
+    }
+
+    /**
+     * Get all unsynced bookings
+     */
+    public List<Booking> getUnsyncedBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        String query = "SELECT b." + COLUMN_BOOKING_ID + ", b." + COLUMN_BOOKING_CLASS_ID + ", b." + COLUMN_BOOKING_USER_ID + ", "
+                + "u." + COLUMN_USER_EMAIL + ", "
+                + "ci." + COLUMN_DATE + ", "
+                + "yc." + COLUMN_TIME + ", "
+                + "yc." + COLUMN_PRICE + ", "
+                + "yc." + COLUMN_DURATION
+                + " FROM " + TABLE_BOOKINGS + " b"
+                + " JOIN " + TABLE_USER + " u ON b." + COLUMN_BOOKING_USER_ID + " = u." + COLUMN_ID
+                + " JOIN " + TABLE_CLASS_INSTANCE + " ci ON b." + COLUMN_BOOKING_CLASS_ID + " = ci." + COLUMN_INSTANCE_ID
+                + " JOIN " + TABLE_YOGA_COURSE + " yc ON ci." + COLUMN_COURSE_ID + " = yc." + COLUMN_ID
+                + " WHERE b." + COLUMN_BOOKING_SYNC_STATUS + " = 0"
+                + " ORDER BY ci." + COLUMN_DATE + " ASC";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Booking booking = new Booking(
+                    cursor.getInt(0),    // booking_id
+                    cursor.getInt(1),    // class_id
+                    cursor.getInt(2),    // user_id
+                    cursor.getString(3), // user_email
+                    cursor.getString(4), // class_date
+                    cursor.getString(5), // course_time
+                    cursor.getDouble(6), // price
+                    cursor.getInt(7)     // duration
+                );
+                bookings.add(booking);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return bookings;
+    }
+
+    /**
+     * Mark user as synced
+     */
+    public int markUserSynced(long userId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_SYNC_STATUS, 1);
+        return database.update(TABLE_USER, values, COLUMN_USER_ID + "=?", 
+                              new String[]{String.valueOf(userId)});
+    }
+
+    /**
+     * Mark booking as synced
+     */
+    public int markBookingSynced(long bookingId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BOOKING_SYNC_STATUS, 1);
+        return database.update(TABLE_BOOKINGS, values, COLUMN_BOOKING_ID + "=?", 
+                              new String[]{String.valueOf(bookingId)});
+    }
+
+    /**
+     * Reset all sync statuses to 0 (useful for testing)
+     */
+    public void resetAllSyncStatuses() {
+        // Reset courses sync status
+        ContentValues courseValues = new ContentValues();
+        courseValues.put(COLUMN_SYNC_STATUS, 0);
+        database.update(TABLE_YOGA_COURSE, courseValues, null, null);
+        
+        // Reset instances sync status
+        ContentValues instanceValues = new ContentValues();
+        instanceValues.put(COLUMN_SYNC_STATUS, 0);
+        database.update(TABLE_CLASS_INSTANCE, instanceValues, null, null);
+        
+        // Reset users sync status
+        ContentValues userValues = new ContentValues();
+        userValues.put(COLUMN_USER_SYNC_STATUS, 0);
+        database.update(TABLE_USER, userValues, null, null);
+        
+        // Reset bookings sync status
+        ContentValues bookingValues = new ContentValues();
+        bookingValues.put(COLUMN_BOOKING_SYNC_STATUS, 0);
+        database.update(TABLE_BOOKINGS, bookingValues, null, null);
+        
+        Log.d("DatabaseHelper", "All sync statuses reset to 0");
+    }
+
+    /**
+     * Get sync status statistics for debugging
+     */
+    public String getSyncStatusReport() {
+        StringBuilder report = new StringBuilder();
+        
+        // Check courses sync status
+        Cursor syncedCourses = database.query(TABLE_YOGA_COURSE, new String[]{"COUNT(*)"}, 
+                                             COLUMN_SYNC_STATUS + " = 1", null, null, null, null);
+        Cursor unsyncedCourses = database.query(TABLE_YOGA_COURSE, new String[]{"COUNT(*)"}, 
+                                               COLUMN_SYNC_STATUS + " = 0", null, null, null, null);
+        
+        int syncedCoursesCount = 0;
+        int unsyncedCoursesCount = 0;
+        
+        if (syncedCourses != null && syncedCourses.moveToFirst()) {
+            syncedCoursesCount = syncedCourses.getInt(0);
+            syncedCourses.close();
+        }
+        if (unsyncedCourses != null && unsyncedCourses.moveToFirst()) {
+            unsyncedCoursesCount = unsyncedCourses.getInt(0);
+            unsyncedCourses.close();
+        }
+        
+        report.append("Courses - Synced: ").append(syncedCoursesCount)
+              .append(", Unsynced: ").append(unsyncedCoursesCount).append("\n");
+        
+        // Check instances sync status
+        Cursor syncedInstances = database.query(TABLE_CLASS_INSTANCE, new String[]{"COUNT(*)"}, 
+                                               COLUMN_SYNC_STATUS + " = 1", null, null, null, null);
+        Cursor unsyncedInstances = database.query(TABLE_CLASS_INSTANCE, new String[]{"COUNT(*)"}, 
+                                                 COLUMN_SYNC_STATUS + " = 0", null, null, null, null);
+        
+        int syncedInstancesCount = 0;
+        int unsyncedInstancesCount = 0;
+        
+        if (syncedInstances != null && syncedInstances.moveToFirst()) {
+            syncedInstancesCount = syncedInstances.getInt(0);
+            syncedInstances.close();
+        }
+        if (unsyncedInstances != null && unsyncedInstances.moveToFirst()) {
+            unsyncedInstancesCount = unsyncedInstances.getInt(0);
+            unsyncedInstances.close();
+        }
+        
+        report.append("Instances - Synced: ").append(syncedInstancesCount)
+              .append(", Unsynced: ").append(unsyncedInstancesCount).append("\n");
+        
+        // Check users sync status
+        Cursor syncedUsers = database.query(TABLE_USER, new String[]{"COUNT(*)"}, 
+                                           COLUMN_USER_SYNC_STATUS + " = 1", null, null, null, null);
+        Cursor unsyncedUsers = database.query(TABLE_USER, new String[]{"COUNT(*)"}, 
+                                             COLUMN_USER_SYNC_STATUS + " = 0", null, null, null, null);
+        
+        int syncedUsersCount = 0;
+        int unsyncedUsersCount = 0;
+        
+        if (syncedUsers != null && syncedUsers.moveToFirst()) {
+            syncedUsersCount = syncedUsers.getInt(0);
+            syncedUsers.close();
+        }
+        if (unsyncedUsers != null && unsyncedUsers.moveToFirst()) {
+            unsyncedUsersCount = unsyncedUsers.getInt(0);
+            unsyncedUsers.close();
+        }
+        
+        report.append("Users - Synced: ").append(syncedUsersCount)
+              .append(", Unsynced: ").append(unsyncedUsersCount).append("\n");
+        
+        // Check bookings sync status
+        Cursor syncedBookings = database.query(TABLE_BOOKINGS, new String[]{"COUNT(*)"}, 
+                                              COLUMN_BOOKING_SYNC_STATUS + " = 1", null, null, null, null);
+        Cursor unsyncedBookings = database.query(TABLE_BOOKINGS, new String[]{"COUNT(*)"}, 
+                                                COLUMN_BOOKING_SYNC_STATUS + " = 0", null, null, null, null);
+        
+        int syncedBookingsCount = 0;
+        int unsyncedBookingsCount = 0;
+        
+        if (syncedBookings != null && syncedBookings.moveToFirst()) {
+            syncedBookingsCount = syncedBookings.getInt(0);
+            syncedBookings.close();
+        }
+        if (unsyncedBookings != null && unsyncedBookings.moveToFirst()) {
+            unsyncedBookingsCount = unsyncedBookings.getInt(0);
+            unsyncedBookings.close();
+        }
+        
+        report.append("Bookings - Synced: ").append(syncedBookingsCount)
+              .append(", Unsynced: ").append(unsyncedBookingsCount);
+        
+        return report.toString();
     }
 }

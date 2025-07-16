@@ -150,6 +150,9 @@ public class MainActivity extends BaseActivity {
         if (id == R.id.action_logout) {
             showLogoutDialog();
             return true;
+        } else if (id == R.id.action_debug_sync) {
+            showSyncDebugInfo();
+            return true;
         }
         
         return super.onOptionsItemSelected(item);
@@ -173,6 +176,20 @@ public class MainActivity extends BaseActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private void showSyncDebugInfo() {
+        String syncReport = helper.getSyncStatusReport();
+        new AlertDialog.Builder(this)
+                .setTitle("Sync Status Debug Info")
+                .setMessage(syncReport)
+                .setPositiveButton("Reset All to Unsynced", (dialog, which) -> {
+                    helper.resetAllSyncStatuses();
+                    Toast.makeText(this, "All sync statuses reset to unsynced", Toast.LENGTH_SHORT).show();
+                    showSyncDebugInfo(); // Show updated info
+                })
+                .setNegativeButton("Close", null)
+                .show();
     }
 
     @Override

@@ -9,6 +9,7 @@ public class Booking {
     private String courseTime;
     private double price;
     private int duration;
+    private int syncStatus; // 0 = not synced, 1 = synced
 
     public Booking() {
     }
@@ -22,6 +23,19 @@ public class Booking {
         this.courseTime = courseTime;
         this.price = price;
         this.duration = duration;
+        this.syncStatus = 0; // Default to not synced
+    }
+
+    public Booking(int bookingId, int classId, int userId, String userEmail, String classDate, String courseTime, double price, int duration, int syncStatus) {
+        this.bookingId = bookingId;
+        this.classId = classId;
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.classDate = classDate;
+        this.courseTime = courseTime;
+        this.price = price;
+        this.duration = duration;
+        this.syncStatus = syncStatus;
     }
 
     // Getters and Setters
@@ -87,5 +101,17 @@ public class Booking {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public int getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(int syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
+    public boolean isSynced() {
+        return syncStatus == 1;
     }
 } 

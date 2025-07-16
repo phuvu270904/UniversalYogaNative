@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String role; // "admin" or "user"
     private String createdDate;
+    private int syncStatus; // 0 = not synced, 1 = synced
 
     // Default constructor
     public User() {
@@ -28,6 +29,18 @@ public class User {
         this.password = password;
         this.role = role;
         this.createdDate = createdDate;
+        this.syncStatus = 0; // Default to not synced
+    }
+
+    // Constructor with all parameters including sync status
+    public User(long id, String name, String email, String password, String role, String createdDate, int syncStatus) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.createdDate = createdDate;
+        this.syncStatus = syncStatus;
     }
 
     // Getters and Setters
@@ -79,6 +92,14 @@ public class User {
         this.createdDate = createdDate;
     }
 
+    public int getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(int syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
     // Helper methods
     public boolean isAdmin() {
         return "admin".equalsIgnoreCase(role);
@@ -86,6 +107,10 @@ public class User {
 
     public boolean isUser() {
         return "user".equalsIgnoreCase(role);
+    }
+
+    public boolean isSynced() {
+        return syncStatus == 1;
     }
 
     @Override
@@ -96,6 +121,7 @@ public class User {
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
                 ", createdDate='" + createdDate + '\'' +
+                ", syncStatus=" + syncStatus +
                 '}';
     }
 } 
