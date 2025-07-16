@@ -3,7 +3,7 @@ package com.example.universalyoganative;
 public class Booking {
     private int bookingId;
     private int classId;
-    private int userId;
+    private long userId;
     private String userEmail;
     private String classDate;
     private String courseTime;
@@ -14,7 +14,7 @@ public class Booking {
     public Booking() {
     }
 
-    public Booking(int bookingId, int classId, int userId, String userEmail, String classDate, String courseTime, double price, int duration) {
+    public Booking(int bookingId, int classId, long userId, String userEmail, String classDate, String courseTime, double price, int duration) {
         this.bookingId = bookingId;
         this.classId = classId;
         this.userId = userId;
@@ -26,7 +26,7 @@ public class Booking {
         this.syncStatus = 0; // Default to not synced
     }
 
-    public Booking(int bookingId, int classId, int userId, String userEmail, String classDate, String courseTime, double price, int duration, int syncStatus) {
+    public Booking(int bookingId, int classId, long userId, String userEmail, String classDate, String courseTime, double price, int duration, int syncStatus) {
         this.bookingId = bookingId;
         this.classId = classId;
         this.userId = userId;
@@ -55,11 +55,11 @@ public class Booking {
         this.classId = classId;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 

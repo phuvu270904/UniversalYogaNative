@@ -150,9 +150,6 @@ public class MainActivity extends BaseActivity {
         if (id == R.id.action_logout) {
             showLogoutDialog();
             return true;
-        } else if (id == R.id.action_debug_sync) {
-            showSyncDebugInfo();
-            return true;
         }
         
         return super.onOptionsItemSelected(item);
