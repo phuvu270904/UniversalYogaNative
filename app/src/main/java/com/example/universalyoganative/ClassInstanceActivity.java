@@ -163,7 +163,7 @@ public class ClassInstanceActivity extends AppCompatActivity implements ClassIns
                 instance.setPhotoPath(cursor.getString(cursor.getColumnIndex("photo_path")));
                 instance.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
                 instance.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
-                instance.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
+                instance.setSyncStatus(String.valueOf(cursor.getInt(cursor.getColumnIndex("sync_status"))));
                 
                 instanceList.add(instance);
             } while (cursor.moveToNext());

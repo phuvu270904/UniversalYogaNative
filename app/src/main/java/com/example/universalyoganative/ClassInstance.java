@@ -15,7 +15,7 @@ public class ClassInstance implements Serializable {
     private String photoPath;
     private double latitude;
     private double longitude;
-    private int syncStatus;
+    private String syncStatus;
 
     // Date format for display
     private static final SimpleDateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -31,7 +31,7 @@ public class ClassInstance implements Serializable {
         this.date = date;
         this.teacher = teacher;
         this.comments = comments;
-        this.syncStatus = 0; // Not synced by default
+        this.syncStatus = "edited"; // Not synced by default
     }
 
     // Getters and setters
@@ -99,11 +99,11 @@ public class ClassInstance implements Serializable {
         this.longitude = longitude;
     }
 
-    public int getSyncStatus() {
+    public String getSyncStatus() {
         return syncStatus;
     }
 
-    public void setSyncStatus(int syncStatus) {
+    public void setSyncStatus(String syncStatus) {
         this.syncStatus = syncStatus;
     }
 
@@ -133,7 +133,7 @@ public class ClassInstance implements Serializable {
     }
 
     public boolean isSynced() {
-        return syncStatus == 1;
+        return "sync".equals(syncStatus);
     }
 
     public String getDayOfWeek() {

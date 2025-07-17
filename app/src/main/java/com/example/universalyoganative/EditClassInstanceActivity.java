@@ -215,7 +215,7 @@ public class EditClassInstanceActivity extends AppCompatActivity {
             instance.setPhotoPath(cursor.getString(cursor.getColumnIndex("photo_path")));
             instance.setLatitude(cursor.getDouble(cursor.getColumnIndex("latitude")));
             instance.setLongitude(cursor.getDouble(cursor.getColumnIndex("longitude")));
-            instance.setSyncStatus(cursor.getInt(cursor.getColumnIndex("sync_status")));
+            instance.setSyncStatus(String.valueOf(cursor.getInt(cursor.getColumnIndex("sync_status"))));
             
             populateInstanceData();
             cursor.close();

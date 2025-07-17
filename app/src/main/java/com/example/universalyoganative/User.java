@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String role; // "admin" or "user"
     private String createdDate;
+    private String syncStatus;
 
     // Default constructor
     public User() {
@@ -28,6 +29,7 @@ public class User {
         this.password = password;
         this.role = role;
         this.createdDate = createdDate;
+        this.syncStatus = "edited"; // Default sync status
     }
 
     // Getters and Setters
@@ -79,6 +81,14 @@ public class User {
         this.createdDate = createdDate;
     }
 
+    public String getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
     // Helper methods
     public boolean isAdmin() {
         return "admin".equalsIgnoreCase(role);
@@ -96,6 +106,7 @@ public class User {
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
                 ", createdDate='" + createdDate + '\'' +
+                ", syncStatus='" + syncStatus + '\'' +
                 '}';
     }
 } 

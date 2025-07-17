@@ -9,6 +9,7 @@ public class Booking {
     private String courseTime;
     private double price;
     private int duration;
+    private String syncStatus;
 
     public Booking() {
     }
@@ -22,6 +23,7 @@ public class Booking {
         this.courseTime = courseTime;
         this.price = price;
         this.duration = duration;
+        this.syncStatus = "edited"; // Default sync status
     }
 
     // Getters and Setters
@@ -87,5 +89,13 @@ public class Booking {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public String getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
     }
 } 

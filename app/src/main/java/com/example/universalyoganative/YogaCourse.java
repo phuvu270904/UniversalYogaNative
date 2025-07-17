@@ -14,7 +14,7 @@ public class YogaCourse implements Serializable {
     private String difficulty;
     private String location;
     private String createdDate;
-    private int syncStatus;
+    private String syncStatus;
 
     // Default constructor
     public YogaCourse() {
@@ -33,7 +33,7 @@ public class YogaCourse implements Serializable {
         this.description = description;
         this.difficulty = difficulty;
         this.location = location;
-        this.syncStatus = 0; // Not synced by default
+        this.syncStatus = "edited"; // Not synced by default
     }
 
     // Getters and setters
@@ -125,11 +125,11 @@ public class YogaCourse implements Serializable {
         this.createdDate = createdDate;
     }
 
-    public int getSyncStatus() {
+    public String getSyncStatus() {
         return syncStatus;
     }
 
-    public void setSyncStatus(int syncStatus) {
+    public void setSyncStatus(String syncStatus) {
         this.syncStatus = syncStatus;
     }
 
@@ -151,7 +151,7 @@ public class YogaCourse implements Serializable {
     }
 
     public boolean isSynced() {
-        return syncStatus == 1;
+        return "sync".equals(syncStatus);
     }
 
     @Override
