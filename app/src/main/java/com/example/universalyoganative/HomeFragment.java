@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.example.universalyoganative.FirebaseSyncService;
+import com.example.universalyoganative.SyncProgressDialog;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
@@ -27,6 +29,7 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
     private YogaCourseAdapter courseAdapter;
     private TextView tvCourseCount, tvInstanceCount, tvEmptyState;
     private List<YogaCourse> courseList;
+    private SyncProgressDialog syncProgressDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,6 +53,15 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
         super.onResume();
         loadCourses();
         updateStatistics();
+    }
+    
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (syncProgressDialog != null) {
+            syncProgressDialog.dismiss();
+            syncProgressDialog = null;
+        }
     }
 
     private void initializeViews(View view) {
@@ -81,8 +93,7 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
 
         MaterialButton btnSync = view.findViewById(R.id.btnSync);
         btnSync.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), SyncActivity.class);
-            startActivity(intent);
+            performFirebaseSync();
         });
 
         MaterialButton btnResetDb = view.findViewById(R.id.btnResetDb);
@@ -192,5 +203,74 @@ public class HomeFragment extends Fragment implements YogaCourseAdapter.OnCourse
         Intent intent = new Intent(getActivity(), CourseDetailActivity.class);
         intent.putExtra("course_id", course.getId());
         startActivity(intent);
+    }
+    
+    /**
+     * Perform Firebase sync operation
+     */
+    private void performFirebaseSync() {
+        // Show progress dialog
+        syncProgressDialog = new SyncProgressDialog(getContext());
+        syncProgressDialog.show();
+        
+        FirebaseSyncService syncService = new FirebaseSyncService(getContext());
+        
+        syncService.performFullSync(new FirebaseSyncService.SyncCallback() {
+            @Override
+            public void onSyncStarted() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (syncProgressDialog != null) {
+                            syncProgressDialog.updateProgress("Starting sync...");
+                        }
+                    });
+                }
+            }
+            
+            @Override
+            public void onSyncProgress(String message) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (syncProgressDialog != null) {
+                            syncProgressDialog.updateProgress(message);
+                        }
+                    });
+                }
+            }
+            
+            @Override
+            public void onSyncCompleted(boolean success, String message) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (syncProgressDialog != null) {
+                            syncProgressDialog.dismiss();
+                            syncProgressDialog = null;
+                        }
+                        
+                        if (success) {
+                            Toast.makeText(getContext(), "Sync completed successfully!", Toast.LENGTH_LONG).show();
+                            // Refresh the data
+                            loadCourses();
+                            updateStatistics();
+                        } else {
+                            Toast.makeText(getContext(), "Sync failed: " + message, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+            
+            @Override
+            public void onSyncError(String error) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (syncProgressDialog != null) {
+                            syncProgressDialog.dismiss();
+                            syncProgressDialog = null;
+                        }
+                        Toast.makeText(getContext(), "Sync error: " + error, Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+        });
     }
 } 

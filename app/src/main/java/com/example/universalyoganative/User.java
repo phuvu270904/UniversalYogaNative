@@ -8,6 +8,7 @@ public class User {
     private String role; // "admin" or "user"
     private String createdDate;
     private String syncStatus;
+    private String firestoreId;
 
     // Default constructor
     public User() {
@@ -89,6 +90,14 @@ public class User {
         this.syncStatus = syncStatus;
     }
 
+    public String getFirestoreId() {
+        return firestoreId;
+    }
+
+    public void setFirestoreId(String firestoreId) {
+        this.firestoreId = firestoreId;
+    }
+
     // Helper methods
     public boolean isAdmin() {
         return "admin".equalsIgnoreCase(role);
@@ -107,6 +116,7 @@ public class User {
                 ", role='" + role + '\'' +
                 ", createdDate='" + createdDate + '\'' +
                 ", syncStatus='" + syncStatus + '\'' +
+                ", firestoreId='" + firestoreId + '\'' +
                 '}';
     }
 } 

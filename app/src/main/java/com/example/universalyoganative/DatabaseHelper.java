@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     private static final String DATABASE_NAME = "YogaDB";
-    private static final int DATABASE_VERSION = 9; // Updated for sync_status enum implementation
+    private static final int DATABASE_VERSION = 12; // Updated for firestore_id columns
 
     // Table names
     private static final String TABLE_YOGA_COURSE = "YogaCourse";
@@ -24,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // YogaCourse table columns
     private static final String COLUMN_ID = "_id";
+    private static final String COLUMN_FIRESTORE_ID = "firestore_id";
     private static final String COLUMN_DAY_OF_WEEK = "dayofweek";
     private static final String COLUMN_TIME = "time";
     private static final String COLUMN_CAPACITY = "capacity";
@@ -42,6 +43,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ClassInstance table columns
     private static final String COLUMN_INSTANCE_ID = "_id";
+    private static final String COLUMN_INSTANCE_FIRESTORE_ID = "firestore_id";
     private static final String COLUMN_COURSE_ID = "course_id";
     private static final String COLUMN_DATE = "date";
     private static final String COLUMN_TEACHER = "teacher";
@@ -53,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // User table columns
     public static final String COLUMN_USER_ID = "_id";
+    public static final String COLUMN_USER_FIRESTORE_ID = "firestore_id";
     public static final String COLUMN_USER_NAME = "name";
     public static final String COLUMN_USER_EMAIL = "email";
     public static final String COLUMN_USER_PASSWORD = "password";
@@ -62,6 +65,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Booking related columns
     private static final String COLUMN_BOOKING_ID = "_id";
+    private static final String COLUMN_BOOKING_FIRESTORE_ID = "firestore_id";
     private static final String COLUMN_BOOKING_CLASS_ID = "class_id";
     private static final String COLUMN_BOOKING_USER_ID = "user_id";
     private static final String COLUMN_BOOKING_SYNC_STATUS = "sync_status";
@@ -77,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Create YogaCourse table
             String CREATE_TABLE_YOGA_COURSE = "CREATE TABLE " + TABLE_YOGA_COURSE + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_FIRESTORE_ID + " TEXT UNIQUE,"
                     + COLUMN_DAY_OF_WEEK + " TEXT,"
                     + COLUMN_TIME + " TEXT,"
                     + COLUMN_CAPACITY + " INTEGER,"
@@ -94,6 +99,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Create User table
             String CREATE_TABLE_USER = "CREATE TABLE " + TABLE_USER + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_FIRESTORE_ID + " TEXT UNIQUE,"
                     + COLUMN_USER_NAME + " TEXT,"
                     + COLUMN_USER_EMAIL + " TEXT UNIQUE,"
                     + COLUMN_USER_PASSWORD + " TEXT,"
@@ -106,6 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Create ClassInstance table
             String CREATE_TABLE_CLASS_INSTANCE = "CREATE TABLE " + TABLE_CLASS_INSTANCE + "("
                     + COLUMN_INSTANCE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_INSTANCE_FIRESTORE_ID + " TEXT UNIQUE,"
                     + COLUMN_COURSE_ID + " INTEGER,"
                     + COLUMN_DATE + " TEXT,"
                     + COLUMN_TEACHER + " TEXT,"
@@ -122,6 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Create Bookings table
             String CREATE_TABLE_BOOKINGS = "CREATE TABLE " + TABLE_BOOKINGS + "("
                     + COLUMN_BOOKING_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + COLUMN_BOOKING_FIRESTORE_ID + " TEXT UNIQUE,"
                     + COLUMN_BOOKING_CLASS_ID + " INTEGER,"
                     + COLUMN_BOOKING_USER_ID + " INTEGER,"
                     + COLUMN_BOOKING_SYNC_STATUS + " TEXT DEFAULT 'edited',"
@@ -183,6 +191,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     db.execSQL("ALTER TABLE " + TABLE_BOOKINGS + " ADD COLUMN " + COLUMN_BOOKING_SYNC_STATUS + " TEXT DEFAULT 'edited'");
                 } catch (Exception e) {
                     Log.d(this.getClass().getName(), "Bookings sync_status column already exists or error: " + e.getMessage());
+                }
+            }
+            
+            if (oldVersion < 10) {
+                // Migration to version 10 (if needed)
+                Log.d(this.getClass().getName(), "Migrating to version 10");
+                // Add any version 10 specific migrations here
+            }
+            
+            if (oldVersion < 11) {
+                // Migration to version 11 (if needed)
+                Log.d(this.getClass().getName(), "Migrating to version 11");
+                // Add any version 11 specific migrations here
+            }
+            
+            if (oldVersion < 12) {
+                // Migration to version 12 - Add firestore_id columns
+                Log.d(this.getClass().getName(), "Migrating to version 12 - Adding firestore_id columns");
+                try {
+                    db.execSQL("ALTER TABLE " + TABLE_YOGA_COURSE + " ADD COLUMN " + COLUMN_FIRESTORE_ID + " TEXT UNIQUE");
+                    db.execSQL("ALTER TABLE " + TABLE_USER + " ADD COLUMN " + COLUMN_FIRESTORE_ID + " TEXT UNIQUE");
+                    db.execSQL("ALTER TABLE " + TABLE_CLASS_INSTANCE + " ADD COLUMN " + COLUMN_INSTANCE_FIRESTORE_ID + " TEXT UNIQUE");
+                    db.execSQL("ALTER TABLE " + TABLE_BOOKINGS + " ADD COLUMN " + COLUMN_BOOKING_FIRESTORE_ID + " TEXT UNIQUE");
+                } catch (Exception e) {
+                    Log.d(this.getClass().getName(), "Firestore ID columns already exist or error: " + e.getMessage());
                 }
             }
             
@@ -362,7 +395,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Create User object from cursor
      */
-    private User createUserFromCursor(Cursor cursor) {
+    public User createUserFromCursor(Cursor cursor) {
         User user = new User();
         user.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)));
         user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_NAME)));
@@ -377,6 +410,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             user.setSyncStatus(syncStatus != null ? syncStatus : SyncStatus.EDITED.getValue());
         } catch (Exception e) {
             user.setSyncStatus(SyncStatus.EDITED.getValue());
+        }
+        
+        // Handle firestore_id - use null if column doesn't exist (for backward compatibility)
+        try {
+            String firestoreId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_FIRESTORE_ID));
+            user.setFirestoreId(firestoreId);
+        } catch (Exception e) {
+            user.setFirestoreId(null);
         }
         
         return user;
@@ -942,5 +983,104 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_BOOKING_SYNC_STATUS, SyncStatus.DELETED.getValue());
         return db.update(TABLE_BOOKINGS, values, COLUMN_BOOKING_ID + " = ?",
                 new String[]{String.valueOf(bookingId)}) > 0;
+    }
+
+    // FIRESTORE ID MANAGEMENT METHODS
+
+    /**
+     * Update Firestore ID for a user
+     */
+    public int updateUserFirestoreId(long userId, String firestoreId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_FIRESTORE_ID, firestoreId);
+        return database.update(TABLE_USER, values, COLUMN_USER_ID + "=?", 
+                              new String[]{String.valueOf(userId)});
+    }
+
+    /**
+     * Update Firestore ID for a yoga course
+     */
+    public int updateCourseFirestoreId(long courseId, String firestoreId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_FIRESTORE_ID, firestoreId);
+        return database.update(TABLE_YOGA_COURSE, values, COLUMN_ID + "=?", 
+                              new String[]{String.valueOf(courseId)});
+    }
+
+    /**
+     * Update Firestore ID for a class instance
+     */
+    public int updateInstanceFirestoreId(long instanceId, String firestoreId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_INSTANCE_FIRESTORE_ID, firestoreId);
+        return database.update(TABLE_CLASS_INSTANCE, values, COLUMN_INSTANCE_ID + "=?", 
+                              new String[]{String.valueOf(instanceId)});
+    }
+
+    /**
+     * Update Firestore ID for a booking
+     */
+    public int updateBookingFirestoreId(long bookingId, String firestoreId) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_BOOKING_FIRESTORE_ID, firestoreId);
+        return database.update(TABLE_BOOKINGS, values, COLUMN_BOOKING_ID + "=?", 
+                              new String[]{String.valueOf(bookingId)});
+    }
+
+    /**
+     * Check if user exists by Firestore ID
+     */
+    public User getUserByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return null;
+        
+        String selection = COLUMN_USER_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        Cursor cursor = database.query(TABLE_USER, null, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            User user = createUserFromCursor(cursor);
+            cursor.close();
+            return user;
+        }
+        
+        if (cursor != null) cursor.close();
+        return null;
+    }
+
+    /**
+     * Check if course exists by Firestore ID
+     */
+    public Cursor getCourseByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return null;
+        
+        String selection = COLUMN_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        return database.query(TABLE_YOGA_COURSE, null, selection, selectionArgs, null, null, null);
+    }
+
+    /**
+     * Check if class instance exists by Firestore ID
+     */
+    public Cursor getInstanceByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return null;
+        
+        String selection = COLUMN_INSTANCE_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        return database.query(TABLE_CLASS_INSTANCE, null, selection, selectionArgs, null, null, null);
+    }
+
+    /**
+     * Check if booking exists by Firestore ID
+     */
+    public Cursor getBookingByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return null;
+        
+        String selection = COLUMN_BOOKING_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        return database.query(TABLE_BOOKINGS, null, selection, selectionArgs, null, null, null);
     }
 }
