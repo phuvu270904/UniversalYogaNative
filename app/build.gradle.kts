@@ -46,6 +46,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
 
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-firestore")
     
     // RecyclerView for better list performance
     implementation("androidx.recyclerview:recyclerview:1.3.2")
