@@ -516,13 +516,16 @@ public class FirebaseSyncService {
                                 
                                 if (existingInstance == null || existingInstance.getCount() == 0) {
                                     // Instance doesn't exist, create new one
-                                    long courseId = ((Number) instanceData.get("course_id")).longValue();
+                                    String firestoreCourseId = (String) instanceData.get("course_id");
                                     String date = (String) instanceData.get("date");
                                     String teacher = (String) instanceData.get("teacher");
                                     
-                                    if (courseId > 0 && date != null && teacher != null) {
+                                    // Convert Firestore course ID to local course ID
+                                    long localCourseId = databaseHelper.getCourseIdByFirestoreId(firestoreCourseId);
+                                    
+                                    if (localCourseId > 0 && date != null && teacher != null) {
                                         long instanceId = databaseHelper.createClassInstance(
-                                                courseId,
+                                                localCourseId, // Use local course ID
                                                 date,
                                                 teacher,
                                                 (String) instanceData.get("comments"),
@@ -536,6 +539,8 @@ public class FirebaseSyncService {
                                             databaseHelper.updateInstanceFirestoreId(instanceId, firestoreId);
                                             updatedCount++;
                                         }
+                                    } else if (localCourseId <= 0) {
+                                        Log.w(TAG, "Cannot create class instance - course with Firestore ID " + firestoreCourseId + " not found locally. Course may need to be synced first.");
                                     }
                                 } else {
                                     // Instance exists, skip to avoid conflicts
@@ -577,15 +582,26 @@ public class FirebaseSyncService {
                                 
                                 if (existingBooking == null || existingBooking.getCount() == 0) {
                                     // Booking doesn't exist, create new one
-                                    int classId = ((Number) bookingData.get("class_id")).intValue();
-                                    long userId = ((Number) bookingData.get("user_id")).longValue();
+                                    String firestoreClassId = (String) bookingData.get("class_id");
+                                    String firestoreUserId = (String) bookingData.get("user_id");
                                     
-                                    if (classId > 0 && userId > 0) {
-                                        long bookingId = databaseHelper.createBooking(classId, userId);
+                                    // Convert Firestore IDs to local IDs
+                                    long localClassId = databaseHelper.getInstanceIdByFirestoreId(firestoreClassId);
+                                    long localUserId = databaseHelper.getUserIdByFirestoreId(firestoreUserId);
+                                    
+                                    if (localClassId > 0 && localUserId > 0) {
+                                        long bookingId = databaseHelper.createBooking((int) localClassId, localUserId);
                                         if (bookingId > 0) {
                                             databaseHelper.markBookingSynced(bookingId);
                                             databaseHelper.updateBookingFirestoreId(bookingId, firestoreId);
                                             updatedCount++;
+                                        }
+                                    } else {
+                                        if (localClassId <= 0) {
+                                            Log.w(TAG, "Cannot create booking - class instance with Firestore ID " + firestoreClassId + " not found locally.");
+                                        }
+                                        if (localUserId <= 0) {
+                                            Log.w(TAG, "Cannot create booking - user with Firestore ID " + firestoreUserId + " not found locally.");
                                         }
                                     }
                                 } else {
@@ -610,13 +626,13 @@ public class FirebaseSyncService {
     }
     
     /**
-     * Push local data to Firestore
+     * Push local data to Firestore (sequential to maintain dependencies)
      */
     private void pushToFirestore(SyncCallback callback) {
-        final int[] completedOperations = {0};
-        final int totalOperations = 4;
+        // Step 1: Push Users and Courses first (can be parallel)
+        final int[] completedBasics = {0};
+        final int basicsCount = 2;
         
-        // Push Users
         pushUsersToFirestore(new SyncCallback() {
             @Override
             public void onSyncStarted() {
@@ -634,12 +650,8 @@ public class FirebaseSyncService {
             
             @Override
             public void onSyncCompleted(boolean success, String message) {
-                completedOperations[0]++;
-                if (completedOperations[0] == totalOperations) {
-                    if (callback != null) {
-                        callback.onSyncCompleted(true, "Push completed");
-                    }
-                }
+                completedBasics[0]++;
+                checkBasicsCompleted(callback, completedBasics[0], basicsCount);
             }
             
             @Override
@@ -650,7 +662,6 @@ public class FirebaseSyncService {
             }
         });
         
-        // Push Yoga Courses
         pushYogaCoursesToFirestore(new SyncCallback() {
             @Override
             public void onSyncStarted() {
@@ -668,12 +679,8 @@ public class FirebaseSyncService {
             
             @Override
             public void onSyncCompleted(boolean success, String message) {
-                completedOperations[0]++;
-                if (completedOperations[0] == totalOperations) {
-                    if (callback != null) {
-                        callback.onSyncCompleted(true, "Push completed");
-                    }
-                }
+                completedBasics[0]++;
+                checkBasicsCompleted(callback, completedBasics[0], basicsCount);
             }
             
             @Override
@@ -683,74 +690,77 @@ public class FirebaseSyncService {
                 }
             }
         });
-        
-        // Push Class Instances
-        pushClassInstancesToFirestore(new SyncCallback() {
-            @Override
-            public void onSyncStarted() {
-                if (callback != null) {
-                    callback.onSyncProgress("Pushing class instances to cloud...");
-                }
-            }
-            
-            @Override
-            public void onSyncProgress(String message) {
-                if (callback != null) {
-                    callback.onSyncProgress(message);
-                }
-            }
-            
-            @Override
-            public void onSyncCompleted(boolean success, String message) {
-                completedOperations[0]++;
-                if (completedOperations[0] == totalOperations) {
+    }
+    
+    /**
+     * Check if basic entities (users and courses) are completed, then proceed with dependent entities
+     */
+    private void checkBasicsCompleted(SyncCallback callback, int completed, int total) {
+        if (completed == total) {
+            // Step 2: Push Class Instances (depends on courses)
+            pushClassInstancesToFirestore(new SyncCallback() {
+                @Override
+                public void onSyncStarted() {
                     if (callback != null) {
-                        callback.onSyncCompleted(true, "Push completed");
+                        callback.onSyncProgress("Pushing class instances to cloud...");
                     }
                 }
-            }
-            
-            @Override
-            public void onSyncError(String error) {
-                if (callback != null) {
-                    callback.onSyncError("Class instances push error: " + error);
-                }
-            }
-        });
-        
-        // Push Bookings
-        pushBookingsToFirestore(new SyncCallback() {
-            @Override
-            public void onSyncStarted() {
-                if (callback != null) {
-                    callback.onSyncProgress("Pushing bookings to cloud...");
-                }
-            }
-            
-            @Override
-            public void onSyncProgress(String message) {
-                if (callback != null) {
-                    callback.onSyncProgress(message);
-                }
-            }
-            
-            @Override
-            public void onSyncCompleted(boolean success, String message) {
-                completedOperations[0]++;
-                if (completedOperations[0] == totalOperations) {
+                
+                @Override
+                public void onSyncProgress(String message) {
                     if (callback != null) {
-                        callback.onSyncCompleted(true, "Push completed");
+                        callback.onSyncProgress(message);
                     }
                 }
-            }
-            
-            @Override
-            public void onSyncError(String error) {
-                if (callback != null) {
-                    callback.onSyncError("Bookings push error: " + error);
+                
+                @Override
+                public void onSyncCompleted(boolean success, String message) {
+                    if (success) {
+                        // Step 3: Push Bookings (depends on class instances and users)
+                        pushBookingsToFirestore(new SyncCallback() {
+                            @Override
+                            public void onSyncStarted() {
+                                if (callback != null) {
+                                    callback.onSyncProgress("Pushing bookings to cloud...");
+                                }
+                            }
+                            
+                            @Override
+                            public void onSyncProgress(String message) {
+                                if (callback != null) {
+                                    callback.onSyncProgress(message);
+                                }
+                            }
+                            
+                            @Override
+                            public void onSyncCompleted(boolean success, String message) {
+                                if (callback != null) {
+                                    callback.onSyncCompleted(true, "Push completed");
+                                }
+                            }
+                            
+                            @Override
+                            public void onSyncError(String error) {
+                                if (callback != null) {
+                                    callback.onSyncError("Bookings push error: " + error);
+                                }
+                            }
+                        });
+                    } else {
+                        if (callback != null) {
+                            callback.onSyncError("Class instances push failed: " + message);
+                        }
+                    }
                 }
-            }
-        });
+                
+                @Override
+                public void onSyncError(String error) {
+                    if (callback != null) {
+                        callback.onSyncError("Class instances push error: " + error);
+                    }
+                }
+            });
+        }
     }
     
     /**
@@ -1006,7 +1016,17 @@ public class FirebaseSyncService {
                     
                     if (SyncStatus.EDITED.getValue().equals(syncStatus)) {
                         Map<String, Object> instanceData = new HashMap<>();
-                        instanceData.put("course_id", cursor.getLong(cursor.getColumnIndex("course_id")));
+                        
+                        // Get local course ID and convert it to Firestore course ID
+                        long localCourseId = cursor.getLong(cursor.getColumnIndex("course_id"));
+                        String firestoreCourseId = databaseHelper.getCourseFirestoreId(localCourseId);
+                        
+                        if (firestoreCourseId == null || firestoreCourseId.isEmpty()) {
+                            Log.w(TAG, "Cannot push class instance - course with local ID " + localCourseId + " has no Firestore ID. Course may need to be synced first.");
+                            continue; // Skip this instance if course isn't synced yet
+                        }
+                        
+                        instanceData.put("course_id", firestoreCourseId); // Use Firestore course ID instead of local ID
                         instanceData.put("date", cursor.getString(cursor.getColumnIndex("date")));
                         instanceData.put("teacher", cursor.getString(cursor.getColumnIndex("teacher")));
                         instanceData.put("comments", cursor.getString(cursor.getColumnIndex("comments")));
@@ -1118,8 +1138,26 @@ public class FirebaseSyncService {
                     
                     if (SyncStatus.EDITED.getValue().equals(syncStatus)) {
                         Map<String, Object> bookingData = new HashMap<>();
-                        bookingData.put("class_id", cursor.getInt(cursor.getColumnIndex("class_id")));
-                        bookingData.put("user_id", cursor.getLong(cursor.getColumnIndex("user_id")));
+                        
+                        // Get local class instance ID and user ID, convert them to Firestore IDs
+                        long localClassId = cursor.getLong(cursor.getColumnIndex("class_id"));
+                        long localUserId = cursor.getLong(cursor.getColumnIndex("user_id"));
+                        
+                        String firestoreClassId = databaseHelper.getInstanceFirestoreId(localClassId);
+                        String firestoreUserId = databaseHelper.getUserFirestoreId(localUserId);
+                        
+                        if (firestoreClassId == null || firestoreClassId.isEmpty()) {
+                            Log.w(TAG, "Cannot push booking - class instance with local ID " + localClassId + " has no Firestore ID. Instance may need to be synced first.");
+                            continue; // Skip this booking if class instance isn't synced yet
+                        }
+                        
+                        if (firestoreUserId == null || firestoreUserId.isEmpty()) {
+                            Log.w(TAG, "Cannot push booking - user with local ID " + localUserId + " has no Firestore ID. User may need to be synced first.");
+                            continue; // Skip this booking if user isn't synced yet
+                        }
+                        
+                        bookingData.put("class_id", firestoreClassId); // Use Firestore class instance ID
+                        bookingData.put("user_id", firestoreUserId); // Use Firestore user ID
                         bookingData.put("sync_status", SyncStatus.SYNC.getValue());
                         
                         DocumentReference bookingRef;

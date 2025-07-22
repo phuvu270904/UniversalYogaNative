@@ -1083,4 +1083,142 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         
         return database.query(TABLE_BOOKINGS, null, selection, selectionArgs, null, null, null);
     }
+
+    /**
+     * Get Firestore ID for a course by local course ID
+     */
+    public String getCourseFirestoreId(long courseId) {
+        String[] columns = {COLUMN_FIRESTORE_ID};
+        String selection = COLUMN_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(courseId)};
+        
+        Cursor cursor = database.query(TABLE_YOGA_COURSE, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            String firestoreId = cursor.getString(cursor.getColumnIndex(COLUMN_FIRESTORE_ID));
+            cursor.close();
+            return firestoreId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return null;
+    }
+
+    /**
+     * Get local course ID by Firestore ID
+     */
+    public long getCourseIdByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return -1;
+        
+        String[] columns = {COLUMN_ID};
+        String selection = COLUMN_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        Cursor cursor = database.query(TABLE_YOGA_COURSE, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            long courseId = cursor.getLong(cursor.getColumnIndex(COLUMN_ID));
+            cursor.close();
+            return courseId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return -1;
+    }
+
+    /**
+     * Get Firestore ID for an instance by local instance ID
+     */
+    public String getInstanceFirestoreId(long instanceId) {
+        String[] columns = {COLUMN_INSTANCE_FIRESTORE_ID};
+        String selection = COLUMN_INSTANCE_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(instanceId)};
+        
+        Cursor cursor = database.query(TABLE_CLASS_INSTANCE, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            String firestoreId = cursor.getString(cursor.getColumnIndex(COLUMN_INSTANCE_FIRESTORE_ID));
+            cursor.close();
+            return firestoreId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return null;
+    }
+
+    /**
+     * Get local instance ID by Firestore ID
+     */
+    public long getInstanceIdByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return -1;
+        
+        String[] columns = {COLUMN_INSTANCE_ID};
+        String selection = COLUMN_INSTANCE_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        Cursor cursor = database.query(TABLE_CLASS_INSTANCE, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            long instanceId = cursor.getLong(cursor.getColumnIndex(COLUMN_INSTANCE_ID));
+            cursor.close();
+            return instanceId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return -1;
+    }
+
+    /**
+     * Get Firestore ID for a user by local user ID
+     */
+    public String getUserFirestoreId(long userId) {
+        String[] columns = {COLUMN_USER_FIRESTORE_ID};
+        String selection = COLUMN_USER_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(userId)};
+        
+        Cursor cursor = database.query(TABLE_USER, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            String firestoreId = cursor.getString(cursor.getColumnIndex(COLUMN_USER_FIRESTORE_ID));
+            cursor.close();
+            return firestoreId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return null;
+    }
+
+    /**
+     * Get local user ID by Firestore ID
+     */
+    public long getUserIdByFirestoreId(String firestoreId) {
+        if (firestoreId == null) return -1;
+        
+        String[] columns = {COLUMN_USER_ID};
+        String selection = COLUMN_USER_FIRESTORE_ID + " = ?";
+        String[] selectionArgs = {firestoreId};
+        
+        Cursor cursor = database.query(TABLE_USER, columns, selection, selectionArgs, null, null, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            long userId = cursor.getLong(cursor.getColumnIndex(COLUMN_USER_ID));
+            cursor.close();
+            return userId;
+        }
+        
+        if (cursor != null) {
+            cursor.close();
+        }
+        return -1;
+    }
 }
