@@ -579,11 +579,22 @@ public class FirebaseSyncService {
                                 
                                 // Check if booking exists locally by Firestore ID
                                 Cursor existingBooking = databaseHelper.getBookingByFirestoreId(firestoreId);
+                                boolean bookingExists = false;
                                 
-                                if (existingBooking == null || existingBooking.getCount() == 0) {
+                                if (existingBooking != null) {
+                                    bookingExists = existingBooking.getCount() > 0;
+                                    existingBooking.close(); // Always close the cursor
+                                }
+                                
+                                if (!bookingExists) {
                                     // Booking doesn't exist, create new one
                                     String firestoreClassId = (String) bookingData.get("class_id");
                                     String firestoreUserId = (String) bookingData.get("user_id");
+                                    
+                                    if (firestoreClassId == null || firestoreUserId == null) {
+                                        Log.w(TAG, "Cannot create booking - missing class_id or user_id in Firestore data");
+                                        continue;
+                                    }
                                     
                                     // Convert Firestore IDs to local IDs
                                     long localClassId = databaseHelper.getInstanceIdByFirestoreId(firestoreClassId);
@@ -595,6 +606,9 @@ public class FirebaseSyncService {
                                             databaseHelper.markBookingSynced(bookingId);
                                             databaseHelper.updateBookingFirestoreId(bookingId, firestoreId);
                                             updatedCount++;
+                                            Log.d(TAG, "Successfully created booking with ID: " + bookingId + " for class: " + localClassId + " and user: " + localUserId);
+                                        } else {
+                                            Log.e(TAG, "Failed to create booking for class: " + localClassId + " and user: " + localUserId);
                                         }
                                     } else {
                                         if (localClassId <= 0) {
@@ -605,8 +619,7 @@ public class FirebaseSyncService {
                                         }
                                     }
                                 } else {
-                                    // Booking exists, skip to avoid conflicts
-                                    existingBooking.close();
+                                    Log.d(TAG, "Booking with Firestore ID " + firestoreId + " already exists locally, skipping");
                                 }
                             } catch (Exception e) {
                                 Log.e(TAG, "Error processing booking document: " + e.getMessage());

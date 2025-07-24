@@ -49,9 +49,8 @@ public class BookingsFragment extends Fragment implements BookingAdapter.OnBooki
     }
 
     private void loadBookings() {
-        long userId = sessionManager.getUserId();
-        
-        List<Booking> bookings = dbHelper.getBookingsByUserId(userId);
+        // Get all bookings from all users
+        List<Booking> bookings = dbHelper.getAllBookings();
         
         if (bookings.isEmpty()) {
             tvNoBookings.setVisibility(View.VISIBLE);

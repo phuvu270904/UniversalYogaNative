@@ -95,7 +95,7 @@ public class MainActivity extends BaseActivity {
                 title = "Account Management";
             } else if (item.getItemId() == R.id.navigation_bookings) {
                 selectedFragment = new BookingsFragment();
-                title = "My Bookings";
+                title = "Booking Management";
             } else if (item.getItemId() == R.id.navigation_profile) {
                 selectedFragment = new ProfileFragment();
                 title = "Profile";
