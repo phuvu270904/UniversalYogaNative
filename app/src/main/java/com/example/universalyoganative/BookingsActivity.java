@@ -1,5 +1,6 @@
 package com.example.universalyoganative;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,9 +11,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.util.List;
 
-public class BookingsActivity extends BaseActivity implements BookingAdapter.OnBookingClickListener {
+public class BookingsActivity extends AppCompatActivity implements BookingAdapter.OnBookingClickListener {
     private RecyclerView recyclerView;
     private BookingAdapter adapter;
     private DatabaseHelper dbHelper;
@@ -21,6 +25,7 @@ public class BookingsActivity extends BaseActivity implements BookingAdapter.OnB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_bookings);
 
         // Initialize views
         recyclerView = findViewById(R.id.recyclerViewBookings);
@@ -35,6 +40,9 @@ public class BookingsActivity extends BaseActivity implements BookingAdapter.OnB
 
         // Initialize database helper
         dbHelper = new DatabaseHelper(this);
+
+        // Set up bottom navigation
+        setupBottomNavigation();
 
         // Set up RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -53,6 +61,35 @@ public class BookingsActivity extends BaseActivity implements BookingAdapter.OnB
             v.setPadding(systemBars.left, statusBarHeight, systemBars.right, 0);
             return insets;
         });
+    }
+
+    protected void setupBottomNavigation() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        if (navView != null) {
+            navView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    startActivity(new Intent(this, MainActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_account) {
+                    startActivity(new Intent(this, AccountActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_profile) {
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_bookings) {
+                    // Already on bookings activity
+                    return true;
+                }
+                return false;
+            });
+
+            // Set the active menu item for bookings
+            navView.setSelectedItemId(R.id.navigation_bookings);
+        }
     }
 
     private void loadBookings() {
@@ -84,10 +121,5 @@ public class BookingsActivity extends BaseActivity implements BookingAdapter.OnB
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_bookings;
     }
 } 

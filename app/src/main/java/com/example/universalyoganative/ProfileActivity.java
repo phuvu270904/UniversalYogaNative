@@ -15,12 +15,14 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
-public class ProfileActivity extends BaseActivity {
+public class ProfileActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private TextView tvName, tvEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
         sessionManager = new SessionManager(this);
         
         // Check if user is logged in
@@ -30,7 +32,7 @@ public class ProfileActivity extends BaseActivity {
             return;
         }
         
-        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_profile);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -38,6 +40,7 @@ public class ProfileActivity extends BaseActivity {
             getSupportActionBar().setTitle("Profile");
         }
 
+        setupBottomNavigation();
         initializeViews();
         displayUserInfo();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -54,9 +57,33 @@ public class ProfileActivity extends BaseActivity {
         });
     }
 
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_profile;
+    protected void setupBottomNavigation() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        if (navView != null) {
+            navView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    startActivity(new Intent(this, MainActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_account) {
+                    startActivity(new Intent(this, AccountActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_profile) {
+                    // Already on profile activity
+                    return true;
+                } else if (itemId == R.id.navigation_bookings) {
+                    startActivity(new Intent(this, BookingsActivity.class));
+                    finish();
+                    return true;
+                }
+                return false;
+            });
+
+            // Set the active menu item for profile
+            navView.setSelectedItemId(R.id.navigation_profile);
+        }
     }
 
     private void initializeViews() {

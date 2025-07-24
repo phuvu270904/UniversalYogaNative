@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,13 +17,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CourseDetailActivity extends BaseActivity {
+public class CourseDetailActivity extends AppCompatActivity {
     private long courseId;
     private YogaCourse course;
     
@@ -40,6 +42,8 @@ public class CourseDetailActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
         // Get course ID from intent
         courseId = getIntent().getLongExtra("course_id", -1);
         if (courseId == -1) {
@@ -48,9 +52,10 @@ public class CourseDetailActivity extends BaseActivity {
             return;
         }
         
-        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_course_detail);
         
         setupToolbar();
+        setupBottomNavigation();
         initializeViews();
         setupRecyclerView();
         setupClickListeners();
@@ -70,9 +75,34 @@ public class CourseDetailActivity extends BaseActivity {
         });
     }
 
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_course_detail;
+    protected void setupBottomNavigation() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        if (navView != null) {
+            navView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    startActivity(new Intent(this, MainActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_account) {
+                    startActivity(new Intent(this, AccountActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_profile) {
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_bookings) {
+                    startActivity(new Intent(this, BookingsActivity.class));
+                    finish();
+                    return true;
+                }
+                return false;
+            });
+
+            // Since this is a detail activity, we might want to highlight home or not set any specific item
+            // navView.setSelectedItemId(R.id.navigation_home);
+        }
     }
 
     private void setupToolbar() {

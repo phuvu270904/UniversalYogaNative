@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,10 +17,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountActivity extends BaseActivity implements UserAdapter.OnUserActionListener {
+public class AccountActivity extends AppCompatActivity implements UserAdapter.OnUserActionListener {
     private RecyclerView recyclerViewUsers;
     private UserAdapter userAdapter;
     private TextView tvUserCount, tvEmptyState;
@@ -29,12 +32,14 @@ public class AccountActivity extends BaseActivity implements UserAdapter.OnUserA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_account);
 
         dbHelper = new DatabaseHelper(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        setupBottomNavigation();
         initializeViews();
         setupRecyclerView();
         loadUsers();
@@ -53,9 +58,33 @@ public class AccountActivity extends BaseActivity implements UserAdapter.OnUserA
         });
     }
 
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_account;
+    protected void setupBottomNavigation() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        if (navView != null) {
+            navView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    startActivity(new Intent(this, MainActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_account) {
+                    // Already on account activity
+                    return true;
+                } else if (itemId == R.id.navigation_profile) {
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    finish();
+                    return true;
+                } else if (itemId == R.id.navigation_bookings) {
+                    startActivity(new Intent(this, BookingsActivity.class));
+                    finish();
+                    return true;
+                }
+                return false;
+            });
+
+            // Set the active menu item for account
+            navView.setSelectedItemId(R.id.navigation_account);
+        }
     }
 
     private void initializeViews() {

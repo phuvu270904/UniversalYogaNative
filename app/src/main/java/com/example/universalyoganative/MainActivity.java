@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -17,7 +18,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends AppCompatActivity {
     public static DatabaseHelper helper;
     private SessionManager sessionManager;
     private BottomNavigationView bottomNavigation;
@@ -25,7 +26,9 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Initialize session manager before calling super (which sets content view)
+        super.onCreate(savedInstanceState);
+        
+        // Initialize session manager before checking login status
         sessionManager = new SessionManager(this);
 
         // Check if user is logged in
@@ -34,7 +37,8 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
-        super.onCreate(savedInstanceState);
+        // Set content view
+        setContentView(R.layout.activity_main);
 
         helper = new DatabaseHelper(getApplicationContext());
 
@@ -46,6 +50,9 @@ public class MainActivity extends BaseActivity {
         if (currentUser != null && getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Welcome, " + currentUser.getName());
         }
+
+        // Setup bottom navigation
+        setupBottomNavigation();
 
         // Load default fragment (Home)
         if (savedInstanceState == null) {
@@ -66,48 +73,45 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_main;
-    }
-
     private void initializeViews() {
         bottomNavigation = findViewById(R.id.nav_view);
     }
 
-    @Override
     protected void setupBottomNavigation() {
         // Initialize views first to ensure bottomNavigation is not null
         initializeViews();
         
-        super.setupBottomNavigation();
-        
-        // Override the parent's navigation behavior for fragment-based navigation
-        bottomNavigation.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
-            String title = "";
-            
-            if (item.getItemId() == R.id.navigation_home) {
-                selectedFragment = new HomeFragment();
-                title = "Home";
-            } else if (item.getItemId() == R.id.navigation_account) {
-                selectedFragment = new AccountFragment();
-                title = "Account Management";
-            } else if (item.getItemId() == R.id.navigation_bookings) {
-                selectedFragment = new BookingsFragment();
-                title = "Booking Management";
-            } else if (item.getItemId() == R.id.navigation_profile) {
-                selectedFragment = new ProfileFragment();
-                title = "Profile";
-            }
-            
-            if (selectedFragment != null) {
-                loadFragment(selectedFragment, title);
-                return true;
-            }
-            
-            return false;
-        });
+        if (bottomNavigation != null) {
+            // Set up fragment-based navigation for MainActivity
+            bottomNavigation.setOnItemSelectedListener(item -> {
+                Fragment selectedFragment = null;
+                String title = "";
+                
+                if (item.getItemId() == R.id.navigation_home) {
+                    selectedFragment = new HomeFragment();
+                    title = "Home";
+                } else if (item.getItemId() == R.id.navigation_account) {
+                    selectedFragment = new AccountFragment();
+                    title = "Account Management";
+                } else if (item.getItemId() == R.id.navigation_bookings) {
+                    selectedFragment = new BookingsFragment();
+                    title = "Booking Management";
+                } else if (item.getItemId() == R.id.navigation_profile) {
+                    selectedFragment = new ProfileFragment();
+                    title = "Profile";
+                }
+                
+                if (selectedFragment != null) {
+                    loadFragment(selectedFragment, title);
+                    return true;
+                }
+                
+                return false;
+            });
+
+            // Set the active menu item for home
+            bottomNavigation.setSelectedItemId(R.id.navigation_home);
+        }
     }
 
     private void loadFragment(Fragment fragment, String title) {
